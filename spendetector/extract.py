@@ -1,18 +1,24 @@
 """GPT-4o vision extraction: receipt image bytes -> structured line items.
 
-Card digits are never extracted (absent from the schema, forbidden in the prompt).
-The deterministic part (`to_receipt`, `normalize_name`) is split out so it can be unit
-tested against saved fixtures without calling the API.
+Card digits are never extracted (absent from the schema, forbidden in the prompt, and scrubbed
+from item names as defense in depth). The deterministic part (`to_receipt`, `normalize_name`)
+is split out so it can be unit tested against saved fixtures without calling the API.
 """
 
 from __future__ import annotations
 
 import base64
+import datetime as dt
 import json
 import re
 from dataclasses import dataclass, field
 
 from .config import CATEGORIES, FALLBACK_CATEGORY, OPENAI_MODEL, env
+
+
+class ReceiptParseError(RuntimeError):
+    """The model response could not be turned into a receipt (refusal, truncation, empty)."""
+
 
 # --- Structured-outputs JSON schema (strict). Note: NO card/last4 property exists. ---
 RECEIPT_SCHEMA = {
@@ -33,7 +39,7 @@ RECEIPT_SCHEMA = {
                     "name": {"type": "string"},
                     "qty": {"type": "number"},
                     "unit_price": {"type": ["number", "null"]},
-                    "total": {"type": "number"},
+                    "total": {"type": ["number", "null"]},
                     "category": {"type": "string", "enum": CATEGORIES},
                     "confidence": {"type": "number", "description": "0..1 legibility"},
                 },
@@ -62,7 +68,7 @@ class Item:
     name: str
     qty: float
     unit_price: float | None
-    total: float
+    total: float | None
     category: str
     confidence: float
     norm_name: str = ""
@@ -84,6 +90,14 @@ _SIZE_TOKEN = re.compile(r"\b\d+(?:\.\d+)?\s?(?:oz|ct|pk|lb|lbs|g|kg|ml|l|pack|x
 _NON_ALNUM = re.compile(r"[^a-z0-9 ]+")
 _WS = re.compile(r"\s+")
 
+# --- Card-digit scrub (defense in depth: the prompt forbids these, this enforces it) ---
+_CARD_RUN = re.compile(r"\d(?:[ -]?\d){11,18}")  # 12-19 digit PAN-like runs
+_CARD_MASK = re.compile(r"[*xX#•]{2,}\s*\d{2,4}")  # masked tails like ****1234
+
+
+def _scrub_card(text: str) -> str:
+    return _CARD_MASK.sub("####", _CARD_RUN.sub("####", text))
+
 
 def normalize_name(raw: str, *, max_words: int = 3) -> str:
     """Normalize a raw item name to a stable matching/select key.
@@ -91,7 +105,7 @@ def normalize_name(raw: str, *, max_words: int = 3) -> str:
     "Oat Milk 64oz", "OAT MILK", and "Oat Milk" all collapse to "oat milk". This matches
     the common real case (the same store prints the same string across visits). It does NOT
     merge spelling variants like "OATMILK" (no space); that needs a dictionary and is out of
-    scope for the demo.
+    scope for the demo, so the hero item's Norm Name must be verified on the seeded rows.
     """
     s = raw.lower()
     s = _SIZE_TOKEN.sub(" ", s)
@@ -100,38 +114,62 @@ def normalize_name(raw: str, *, max_words: int = 3) -> str:
     return " ".join(s.split()[:max_words])
 
 
-def _coerce_category(value: str) -> str:
+def _coerce_category(value) -> str:
     return value if value in CATEGORIES else FALLBACK_CATEGORY
 
 
+def _to_float(value) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _valid_iso_date(value) -> str | None:
+    """Return the value if it is an ISO date string, else None (so buckets never crash)."""
+    if not isinstance(value, str):
+        return None
+    try:
+        dt.date.fromisoformat(value)
+        return value
+    except ValueError:
+        return None
+
+
 def to_receipt(data: dict) -> Receipt:
-    """Build a Receipt from raw model JSON. Pure and deterministic (unit-test boundary)."""
+    """Build a Receipt from raw model JSON. Pure and defensive (the unit-test boundary)."""
     items: list[Item] = []
     for raw in data.get("items", []):
-        qty = raw.get("qty") or 1
-        total = raw.get("total")
-        unit_price = raw.get("unit_price")
+        if not isinstance(raw, dict):
+            continue
+        name = _scrub_card(str(raw.get("name") or "Item")).strip() or "Item"
+        qty = _to_float(raw.get("qty")) or 1.0
+        total = _to_float(raw.get("total"))
+        unit_price = _to_float(raw.get("unit_price"))
         if unit_price is None and total is not None and qty:
             unit_price = round(total / qty, 2)
+        confidence = _to_float(raw.get("confidence"))
+        if confidence is None:  # missing or non-numeric; do NOT use `or` (a real 0.0 is meaningful)
+            confidence = 1.0
         items.append(
             Item(
-                name=raw["name"],
+                name=name,
                 qty=qty,
                 unit_price=unit_price,
                 total=total,
                 category=_coerce_category(raw.get("category", FALLBACK_CATEGORY)),
-                confidence=raw.get("confidence", 1.0),
-                norm_name=normalize_name(raw["name"]),
+                confidence=confidence,
+                norm_name=normalize_name(name),
             )
         )
     return Receipt(
-        is_receipt=data.get("is_receipt", True),
-        store=data.get("store"),
-        date=data.get("date"),
+        is_receipt=bool(data.get("is_receipt", True)),
+        store=_scrub_card(data["store"]) if isinstance(data.get("store"), str) else None,
+        date=_valid_iso_date(data.get("date")),
         items=items,
-        subtotal=data.get("subtotal"),
-        tax=data.get("tax"),
-        total=data.get("total"),
+        subtotal=_to_float(data.get("subtotal")),
+        tax=_to_float(data.get("tax")),
+        total=_to_float(data.get("total")),
     )
 
 
@@ -165,7 +203,15 @@ def parse_receipt(image_bytes: bytes, *, client=None) -> Receipt:
             "type": "json_schema",
             "json_schema": {"name": "receipt", "strict": True, "schema": RECEIPT_SCHEMA},
         },
-        max_tokens=1500,
+        max_tokens=2000,
         temperature=0,
     )
-    return to_receipt(json.loads(resp.choices[0].message.content))
+    choice = resp.choices[0]
+    content = getattr(choice.message, "content", None)
+    if not content:  # refusal or empty
+        raise ReceiptParseError("the model returned no usable content")
+    try:
+        data = json.loads(content)
+    except (json.JSONDecodeError, TypeError) as exc:  # truncation / malformed
+        raise ReceiptParseError("the model response was not valid JSON") from exc
+    return to_receipt(data)

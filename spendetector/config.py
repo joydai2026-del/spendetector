@@ -27,7 +27,9 @@ OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-2024-08-06")
 
 # Insight thresholds.
 PRICE_MOVE_THRESHOLD = 0.10  # a repeat item moving >= 10% triggers the price-creep insight
-CATEGORY_SPIKE_FACTOR = 2.0  # a category > 2x its trailing-4-week average flags a spike
+# Category-spike (insight ladder rung 2) is deferred past the Jun 12 demo: the demo's beats only
+# use price_move and cold_start, so this constant is reserved, not yet wired.
+CATEGORY_SPIKE_FACTOR = 2.0
 
 
 def env(name: str) -> str:

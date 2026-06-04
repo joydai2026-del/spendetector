@@ -3,21 +3,24 @@
 `process_update` is plain Python (no Modal import) so it unit-tests with injected fakes. The
 Modal-decorated wrapper lives in app.py and calls this with a real modal.Dict as the seen-set.
 
-Idempotency is two-layer and ordered so Modal's automatic retries still work:
-  1. read the seen-set (fast path) and the Receipts-DB guard (durable) at the top; either hit
-     means we already handled this update_id -> stop.
-  2. mark the seen-set only AFTER a successful write, so a retry of a pre-write failure re-runs,
-     while a redelivery after success is caught by the DB guard.
+Idempotency is two-layer:
+  1. an in-memory modal.Dict seen-set on update_id (catches Telegram redelivering the same update);
+  2. a durable Notion guard on a sha256 of the image bytes (catches the user RE-SENDING the same
+     photo, which Telegram delivers as a brand-new update_id).
+The whole heavy path is wrapped so a failure always sends a soft-fail reply, never dead silence.
 """
 
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 
 from . import extract as extract_mod
 from . import notion_io, reply, telegram_io
 from .config import env_optional
 from .insight import compute_insight
+
+_LOW_CONFIDENCE = 0.5
 
 
 def _photo_file_id(message: dict) -> str | None:
@@ -31,6 +34,14 @@ def _photo_file_id(message: dict) -> str | None:
     return None
 
 
+def _owner_ok(chat_id) -> bool:
+    """Fail closed: only the configured owner is served. Absence of config rejects in prod."""
+    allowed = env_optional("TELEGRAM_ALLOWED_CHAT_ID")
+    if allowed:
+        return str(chat_id) == str(allowed)
+    return env_optional("SPENDETECTOR_ALLOW_INSECURE") == "1"
+
+
 def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict:
     """Process one update. `deps` injects fakes for extract/notion/telegram in tests."""
     d = deps or {}
@@ -42,12 +53,10 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
     message = update.get("message") or update.get("edited_message") or {}
     chat_id = (message.get("chat") or {}).get("id")
 
-    # Owner gate: this is a personal app; ignore anyone else who finds the bot.
-    allowed = env_optional("TELEGRAM_ALLOWED_CHAT_ID")
-    if allowed and str(chat_id) != str(allowed):
+    if not _owner_ok(chat_id):
         return {"status": "rejected", "reason": "unauthorized_chat"}
 
-    # Idempotency layer 1a: seen-set fast path.
+    # Idempotency layer 1: in-memory seen-set on update_id (same-update redelivery).
     if seen is not None and update_id in seen:
         return {"status": "duplicate"}
 
@@ -55,32 +64,49 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
     if not file_id:
         return {"status": "ignored", "reason": "no_photo"}
 
-    # Idempotency layer 1b: durable DB guard (catches redelivery after a prior success).
     try:
-        if notion.find_receipt_by_update_id(update_id):
-            return {"status": "duplicate"}
-    except Exception:
-        pass  # best-effort; the seen-set still covers the common case
+        image_bytes = telegram.get_file_bytes(file_id)
+        image_hash = hashlib.sha256(image_bytes).hexdigest()
 
-    image_bytes = telegram.get_file_bytes(file_id)
-    receipt = extract.parse_receipt(image_bytes)
+        # Idempotency layer 2: durable guard on the image bytes (same photo re-sent).
+        try:
+            if notion.find_receipt_by_image_hash(image_hash):
+                if seen is not None:
+                    seen[update_id] = True
+                return {"status": "duplicate"}
+        except Exception:
+            pass  # best-effort; the seen-set still covers same-update redelivery
 
-    if not receipt.is_receipt:
-        telegram.send_message(chat_id, reply.non_receipt_reply())
-        return {"status": "not_receipt"}
-    if not receipt.items:
-        telegram.send_message(chat_id, reply.failed_reply())
-        return {"status": "empty"}
+        receipt = extract.parse_receipt(image_bytes)
 
-    # Prior prices BEFORE writing, so this receipt's own rows never become their own "prior".
-    eff_date = receipt.date or dt.date.today().isoformat()
-    prior = notion.fetch_prior_prices(receipt.items, eff_date)
-    insight = compute_insight(receipt.items, prior)
+        if not receipt.is_receipt:
+            telegram.send_message(chat_id, reply.non_receipt_reply())
+            return {"status": "not_receipt"}
+        if not receipt.items:
+            telegram.send_message(chat_id, reply.failed_reply())
+            return {"status": "empty"}
 
-    result = notion.write_receipt(receipt, update_id)
+        # Prior prices BEFORE writing, so this receipt's own rows never become their own "prior".
+        eff_date = receipt.date or dt.date.today().isoformat()
+        prior = notion.fetch_prior_prices(receipt.items, eff_date)
+        insight = compute_insight(receipt.items, prior)
 
-    if seen is not None:
-        seen[update_id] = True  # mark complete only after the write succeeded
+        result = notion.write_receipt(receipt, update_id, image_hash=image_hash)
+        if seen is not None:
+            seen[update_id] = True  # mark complete only after the write succeeded
 
-    telegram.send_message(chat_id, reply.compose_reply(receipt, insight))
-    return {"status": "ok", "insight_kind": insight.kind, "receipt": result}
+        if result.get("failed_items", 0) >= len(receipt.items):
+            telegram.send_message(chat_id, reply.failed_reply())
+            return {"status": "write_failed", "receipt": result}
+
+        low_conf = sum(1 for it in receipt.items if (it.confidence or 1.0) < _LOW_CONFIDENCE)
+        telegram.send_message(chat_id, reply.compose_reply(receipt, insight, low_conf=low_conf))
+        return {"status": "ok", "insight_kind": insight.kind, "receipt": result}
+
+    except Exception as exc:
+        # Never leave the user in silence; this is the demo-day dead-air guard.
+        try:
+            telegram.send_message(chat_id, reply.error_reply())
+        except Exception:
+            pass
+        return {"status": "error", "error": type(exc).__name__}

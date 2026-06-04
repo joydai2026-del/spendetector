@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import modal
 from fastapi import Header
+from fastapi.responses import JSONResponse
 
 from spendetector.webhook import verify_secret
 
@@ -39,6 +40,6 @@ def telegram_webhook(
     x_telegram_bot_api_secret_token: str | None = Header(default=None),
 ) -> dict:
     if not verify_secret(x_telegram_bot_api_secret_token):
-        return {"ok": False}
+        return JSONResponse({"ok": False}, status_code=403)
     process_receipt.spawn(update)
     return {"ok": True}

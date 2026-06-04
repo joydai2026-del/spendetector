@@ -12,21 +12,23 @@ def ok_receipt(*, is_receipt=True, items=None, store="S", date="2026-06-04", tot
 
 
 class FakeNotion:
-    def __init__(self):
+    def __init__(self, failed_items: int = 0):
         self.writes = 0
-        self.ids: set[int] = set()
+        self.hashes: set[str] = set()
         self.prior: dict = {}
+        self._failed = failed_items
 
-    def find_receipt_by_update_id(self, update_id):
-        return update_id in self.ids
+    def find_receipt_by_image_hash(self, image_hash):
+        return image_hash in self.hashes
 
-    def fetch_prior_prices(self, items, before_date_iso, **kw):
+    def fetch_prior_prices(self, items, on_or_before_iso, **kw):
         return self.prior
 
-    def write_receipt(self, receipt, update_id, **kw):
+    def write_receipt(self, receipt, update_id, *, image_hash=None, **kw):
         self.writes += 1
-        self.ids.add(update_id)
-        return {"receipt_id": "r", "url": "https://www.notion.so/r", "failed_items": 0}
+        if image_hash:
+            self.hashes.add(image_hash)
+        return {"receipt_id": "r", "url": "https://www.notion.so/r", "failed_items": self._failed}
 
 
 class FakeTelegram:
@@ -46,6 +48,11 @@ class FakeExtract:
 
     def parse_receipt(self, image_bytes, **kw):
         return self._receipt
+
+
+class RaisingExtract:
+    def parse_receipt(self, image_bytes, **kw):
+        raise RuntimeError("boom")
 
 
 def deps(notion, telegram, receipt):

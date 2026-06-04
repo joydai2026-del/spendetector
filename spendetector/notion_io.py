@@ -8,15 +8,18 @@ native charts read one flat table with no rollups/formulas on any axis.
 from __future__ import annotations
 
 import datetime as dt
+import time
 
 import httpx
 
 from .config import env
-from .extract import Item, Receipt
+from .extract import Receipt
 
 NOTION_API = "https://api.notion.com/v1"
 NOTION_VERSION = "2022-06-28"
 _TIMEOUT = 30.0
+_MAX_RETRIES = 2
+_MAX_BACKOFF = 5.0
 
 
 def _headers() -> dict:
@@ -31,8 +34,14 @@ def _request(method: str, path: str, payload: dict, client: httpx.Client | None)
     own = client is None
     c = client or httpx.Client(timeout=_TIMEOUT)
     try:
-        r = c.request(method, f"{NOTION_API}{path}", headers=_headers(), json=payload)
-        r.raise_for_status()
+        for attempt in range(_MAX_RETRIES + 1):
+            r = c.request(method, f"{NOTION_API}{path}", headers=_headers(), json=payload)
+            if r.status_code == 429 and attempt < _MAX_RETRIES:
+                time.sleep(min(float(r.headers.get("Retry-After", 1)), _MAX_BACKOFF))
+                continue
+            r.raise_for_status()
+            return r.json()
+        r.raise_for_status()  # retries exhausted on a 429
         return r.json()
     finally:
         if own:
@@ -48,7 +57,13 @@ def _patch(path: str, payload: dict, client: httpx.Client | None = None) -> dict
 
 
 def _select(name: str) -> dict:
-    return {"select": {"name": name}}
+    # Notion select option names cannot contain commas; sanitize, collapse spaces, cap length.
+    clean = " ".join(name.replace(",", " ").split())[:100] or "Unknown"
+    return {"select": {"name": clean}}
+
+
+def _rich_text(value: str) -> dict:
+    return {"rich_text": [{"text": {"content": value[:2000]}}]}
 
 
 def _set_number(props: dict, key: str, value: float | None) -> None:
@@ -67,11 +82,11 @@ def bucket_month(date_iso: str) -> str:
     return f"{d.year}-{d.month:02d}"
 
 
-# --- Idempotency guard (defense in depth alongside the worker's modal.Dict seen-set) ---
-def find_receipt_by_update_id(update_id: int, *, client: httpx.Client | None = None) -> bool:
+# --- Idempotency guard (dedup the SAME photo, which Telegram redelivers with a new update_id) ---
+def find_receipt_by_image_hash(image_hash: str, *, client: httpx.Client | None = None) -> bool:
     db = env("SPENDETECTOR_RECEIPTS_DB_ID")
     payload = {
-        "filter": {"property": "Telegram Update ID", "number": {"equals": update_id}},
+        "filter": {"property": "Image Hash", "rich_text": {"equals": image_hash}},
         "page_size": 1,
     }
     return bool(_post(f"/databases/{db}/query", payload, client).get("results"))
@@ -79,7 +94,7 @@ def find_receipt_by_update_id(update_id: int, *, client: httpx.Client | None = N
 
 # --- Prior-price lookup for the insight ---
 def find_last_price(
-    norm_name: str, before_date_iso: str, *, client: httpx.Client | None = None
+    norm_name: str, on_or_before_iso: str, *, client: httpx.Client | None = None
 ) -> tuple[float, str] | None:
     db = env("SPENDETECTOR_ITEMS_DB_ID")
     payload = {
@@ -87,7 +102,9 @@ def find_last_price(
             "and": [
                 {"property": "Norm Name", "select": {"equals": norm_name}},
                 {"property": "Unit Price", "number": {"is_not_empty": True}},
-                {"property": "Date", "date": {"before": before_date_iso}},
+                # on_or_before is safe: this receipt's own rows are not written yet, so they
+                # cannot be returned, and a same-day earlier purchase still counts as prior.
+                {"property": "Date", "date": {"on_or_before": on_or_before_iso}},
             ]
         },
         "sorts": [{"property": "Date", "direction": "descending"}],
@@ -101,11 +118,11 @@ def find_last_price(
 
 
 def fetch_prior_prices(
-    items: list[Item], before_date_iso: str, *, client: httpx.Client | None = None
+    items: list, on_or_before_iso: str, *, client: httpx.Client | None = None
 ) -> dict[str, tuple[float, str]]:
     out: dict[str, tuple[float, str]] = {}
     for nn in {i.norm_name for i in items if i.norm_name}:
-        found = find_last_price(nn, before_date_iso, client=client)
+        found = find_last_price(nn, on_or_before_iso, client=client)
         if found:
             out[nn] = found
     return out
@@ -116,6 +133,7 @@ def write_receipt(
     receipt: Receipt,
     update_id: int,
     *,
+    image_hash: str | None = None,
     photo_url: str | None = None,
     client: httpx.Client | None = None,
 ) -> dict:
@@ -132,6 +150,8 @@ def write_receipt(
         "Telegram Update ID": {"number": update_id},
         "Status": _select("complete"),
     }
+    if image_hash:
+        rprops["Image Hash"] = _rich_text(image_hash)
     if receipt.store:
         rprops["Store"] = _select(receipt.store)
     _set_number(rprops, "Subtotal", receipt.subtotal)

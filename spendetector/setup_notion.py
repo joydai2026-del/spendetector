@@ -23,6 +23,7 @@ RECEIPTS_PROPERTIES = {
     "Item Count": {"number": {}},
     "Receipt Photo": {"files": {}},
     "Telegram Update ID": {"number": {}},
+    "Image Hash": {"rich_text": {}},  # sha256 of the photo, for same-photo idempotency
     "Status": {
         "select": {
             "options": [{"name": "complete"}, {"name": "partial"}, {"name": "failed"}]
