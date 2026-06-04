@@ -1,0 +1,16 @@
+{
+  "is_receipt": true,
+  "store": "Whole Foods Market",
+  "date": "2026-06-03",
+  "items": [
+    {"name": "Oat Milk 64oz", "qty": 1, "unit_price": 5.29, "total": 5.29, "category": "Groceries", "confidence": 0.98},
+    {"name": "Organic Bananas", "qty": 1, "unit_price": 1.99, "total": 1.99, "category": "Groceries", "confidence": 0.97},
+    {"name": "Cold Brew Coffee", "qty": 2, "unit_price": 3.49, "total": 6.98, "category": "Coffee", "confidence": 0.95},
+    {"name": "Atlantic Salmon", "qty": 1, "unit_price": 14.99, "total": 14.99, "category": "Groceries", "confidence": 0.90},
+    {"name": "Dark Chocolate Bar", "qty": 3, "unit_price": null, "total": 8.97, "category": "Snacks", "confidence": 0.88},
+    {"name": "Dish Soap", "qty": 1, "unit_price": 4.49, "total": 4.49, "category": "Household", "confidence": 0.93}
+  ],
+  "subtotal": 42.71,
+  "tax": 0.0,
+  "total": 42.71
+}

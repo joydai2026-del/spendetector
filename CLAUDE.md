@@ -12,7 +12,7 @@ Bank statements show "$87 at Target," never the items, so you never see your rea
 ## Architecture (the loop)
 `Telegram (photo)` → `Modal webhook (cloud, free tier)` → `GPT-4o vision → line-item JSON` → `Notion database + dashboard` → `bot replies with a tap-through Notion link`.
 
-- **Capture:** Telegram bot (reuse JJ's personal bot, or a fresh one).
+- **Capture:** a fresh dedicated Telegram bot via BotFather (locked 2026-06-04; reusing a personal bot is out because `setWebhook` makes a bot exclusive to one URL).
 - **Cloud:** Modal (serverless; Modal ships an official receipt-OCR example to start from). Never the Mac.
 - **Extraction:** GPT-4o vision, strict JSON `{store, date, items[{name, qty, unit_price, total}], tax, total}`. ~90% line-item accuracy, ~$0.005/receipt. Use full GPT-4o, NOT mini (mini's image-token quirk erases the savings).
 - **Store + charts:** Notion API (free). Notion charts read plain number/select fields the bot writes (charts cannot use formulas or rollups on an axis).
@@ -27,11 +27,13 @@ Full plan with diagrams, dashboard mockups, and the demo script: **`docs/plan.ht
 3. Build with Claude Code on a `feat/` branch; Codex + context-free review gate per change.
 4. QA the real end-to-end (snap a real receipt → row appears in Notion → link back to phone), not just unit tests.
 
-## Open decisions (resolve in office-hours)
-- Telegram bot: reuse JJ's personal bot token, or a fresh one?
-- Which personal Notion page hosts the Spending dashboard (share it with the integration)?
-- Category list (groceries / dining / coffee / household / ...), or model-inferred + JJ corrects?
-- Confirm: strip and never store card digits.
+## Resolved decisions (office-hours 2026-06-04, locked in `.vault/plans/2026-06-04-spendetector-plan.md`)
+- **Telegram bot:** a fresh dedicated bot (BotFather).
+- **Notion home:** JJ's personal workspace, a fresh "Spendetector" page + databases (NOT the AI Collective business workspace `ntn` currently points at).
+- **Categories:** a fixed canonical list the model classifies into (Groceries, Dining, Coffee, Snacks, Household, Health, Transport, Other); JJ recategorizes in Notion.
+- **Card digits:** stripped and never stored (absent from the extraction schema; prompt forbids emitting them).
+- **Bot reply:** one-shot (confirmation + one insight + tap-through link); no conversational Q&A for the demo. The `docs/plan.html` chat mockup's follow-up Q&A is out of demo scope.
+- **Demo shape:** two beats (live itemization + seeded real-history price-creep), Notion dashboard is the on-screen hero. See the plan, sections 4 and 6.
 
 ## Non-negotiables
 - **Cloud-first (Modal), phone-first.** Never Mac-tethered.

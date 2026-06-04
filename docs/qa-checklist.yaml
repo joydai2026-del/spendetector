@@ -1,0 +1,405 @@
+project: spendetector
+created: 2026-06-04
+source_plan: .vault/plans/2026-06-04-spendetector-plan.md
+max_retries: 3
+build_command: "cd /Users/joyd/Spendetector && python -m pytest -q"
+notes: >
+  Deterministic definition of done for the Jun 12 Notion demo. Probabilistic surface
+  (GPT-4o vision extraction) is covered here at the deterministic floor only; the
+  distributional accuracy bar is handled lightly via fixtures (B-series) given this is a
+  community demo, not a multi-customer production AI feature. See /ai-done for the full
+  apparatus if this graduates beyond the demo.
+summary:
+  total: 34
+  passed: 0
+  failed: 0
+  blocked: 0
+  pending: 34
+
+checks:
+  # ---------------------------------------------------------------------------
+  # A. Build & static gate
+  # ---------------------------------------------------------------------------
+  - id: A1
+    name: "Test suite passes"
+    type: automated
+    command: "cd /Users/joyd/Spendetector && python -m pytest -q"
+    expected: "0"
+    comparison_mode: exit_code
+    side_effects: false
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: A2
+    name: "Static lint clean (ruff)"
+    type: automated
+    command: "cd /Users/joyd/Spendetector && ruff check spendetector"
+    expected: "/All checks passed|No issues/"
+    comparison_mode: regex
+    side_effects: false
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: A3
+    name: "No hardcoded secrets or ids in source (all via os.environ / Modal secret)"
+    type: code-audit
+    files: [spendetector/app.py, spendetector/extract.py, spendetector/notion_io.py, spendetector/telegram_io.py, spendetector/webhook.py, spendetector/worker.py]
+    criteria: "No literal API keys, bot tokens, Notion tokens, or database ids appear in source. Every credential and id is read from os.environ (populated by the spendetector-secrets Modal secret). Category list is the only allowed in-code constant."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  # ---------------------------------------------------------------------------
+  # B. Extraction contract (GPT-4o vision)
+  # ---------------------------------------------------------------------------
+  - id: B1
+    name: "Model is gpt-4o full (not mini) with strict json_schema"
+    type: code-audit
+    files: [spendetector/extract.py]
+    criteria: "The OpenAI call uses a full gpt-4o snapshot (e.g. gpt-4o-2024-08-06), NOT gpt-4o-mini, with response_format type json_schema and strict:true, and image detail set to 'high'."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: B2
+    name: "Schema has no card-digit field and forbids emitting card numbers"
+    type: code-audit
+    files: [spendetector/extract.py]
+    criteria: "The JSON schema contains NO payment_last4 / card / account property. The system prompt explicitly instructs the model to never output any card number, account number, or last-4 digits."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: B3
+    name: "Category is enforced to the fixed 8 (enum + post-parse fallback)"
+    type: code-audit
+    files: [spendetector/extract.py]
+    criteria: "category is a JSON-schema enum of exactly [Groceries, Dining, Coffee, Snacks, Household, Health, Transport, Other]. After parse, any value not in the list is coerced to 'Other'."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: B4
+    name: "Schema includes is_receipt and per-item confidence"
+    type: code-audit
+    files: [spendetector/extract.py]
+    criteria: "Schema includes a top-level is_receipt boolean and a per-item confidence number (0..1) used by downstream non-receipt and low-confidence handling."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: B5
+    name: "parse_receipt validates against saved REAL-receipt fixtures (schema + enum + no card digits)"
+    type: automated
+    command: "cd /Users/joyd/Spendetector && python -m pytest -q tests/test_extract.py"
+    expected: "0"
+    comparison_mode: exit_code
+    side_effects: false
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: B6
+    name: "Item-name normalizer collapses variants to one key"
+    type: automated
+    command: "cd /Users/joyd/Spendetector && python -m pytest -q tests/test_normalize.py"
+    expected: "0"
+    comparison_mode: exit_code
+    side_effects: false
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: B7
+    name: "normalize_name unit truth: 'Oat Milk 64oz' and 'OATMILK' both map to 'oat milk'"
+    type: code-audit
+    files: [spendetector/extract.py, tests/test_normalize.py]
+    criteria: "normalize_name lowercases, strips size/qty tokens (oz/ct/pk/lb/g/ml/l/pack), strips non-alphanumerics, and keeps the first significant words so 'Oat Milk 64oz' and 'OATMILK' both produce 'oat milk'. A test asserts this exact case plus empty/all-digits edge cases."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  # ---------------------------------------------------------------------------
+  # C. Notion data model & I/O
+  # ---------------------------------------------------------------------------
+  - id: C1
+    name: "Two databases: Receipts + Items, with Items denormalized"
+    type: code-audit
+    files: [spendetector/notion_io.py]
+    criteria: "Code writes to two databases (Receipts + Items). Each Item row carries denormalized Store, Date, Category, plus pre-bucketed Week and Month select strings, and a relation back to its Receipt."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: C2
+    name: "Week/Month are pre-bucketed select strings written at write time"
+    type: automated
+    command: "cd /Users/joyd/Spendetector && python -m pytest -q tests/test_buckets.py"
+    expected: "0"
+    comparison_mode: exit_code
+    side_effects: false
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: C3
+    name: "bucket truth: 2026-06-04 -> Week 2026-W23, Month 2026-06 (and year-boundary case)"
+    type: code-audit
+    files: [spendetector/notion_io.py, tests/test_buckets.py]
+    criteria: "bucket_week and bucket_month produce ISO-week and YYYY-MM labels; a test covers a known date and a year-boundary date."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: C4
+    name: "write_receipt writes a real row to a throwaway Notion DB (integration)"
+    type: automated
+    command: "cd /Users/joyd/Spendetector && python -m pytest -q -m integration tests/test_notion_io.py"
+    expected: "0"
+    comparison_mode: exit_code
+    side_effects: true
+    status: pending
+    retries: 0
+    blocked_reason: "needs NOTION_TOKEN + a throwaway DB id in env"
+
+  - id: C5
+    name: "Field types match the chartable schema (number/select/date, no formula/rollup on chart axes)"
+    type: code-audit
+    files: [spendetector/notion_io.py]
+    criteria: "Unit Price, Line Total, Qty are number; Category, Norm Name, Store, Week, Month are select; Date is date. No chart-axis field is a formula or rollup."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  # ---------------------------------------------------------------------------
+  # D. Modal spine (webhook / worker / idempotency)
+  # ---------------------------------------------------------------------------
+  - id: D1
+    name: "Webhook ACKs fast and offloads work via .spawn()"
+    type: code-audit
+    files: [spendetector/webhook.py]
+    criteria: "The fastapi_endpoint returns {'ok': True} immediately and calls process_receipt.spawn(update). The webhook itself performs NO OpenAI/Notion work (so Telegram never retry-storms)."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: D2
+    name: "Idempotency: duplicate update_id writes exactly one receipt"
+    type: automated
+    command: "cd /Users/joyd/Spendetector && python -m pytest -q tests/test_idempotency.py"
+    expected: "0"
+    comparison_mode: exit_code
+    side_effects: false
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: D3
+    name: "Two-layer idempotency present (modal.Dict seen-set + DB guard by update_id)"
+    type: code-audit
+    files: [spendetector/worker.py, spendetector/notion_io.py]
+    criteria: "Worker checks a modal.Dict seen-set on update_id at the top, AND a Receipts-DB query by Telegram Update ID before pages.create. Either match short-circuits with no duplicate row and no duplicate reply."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: D4
+    name: "Worker has timeout + retries and all user messages come from the worker"
+    type: code-audit
+    files: [spendetector/worker.py]
+    criteria: "process_receipt is decorated with timeout (~120s) and retries (>=2). Every user-facing message (success and failure) is sent by the worker via telegram send_message, never by the webhook response."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: D5
+    name: "Webhook authenticity + owner gating"
+    type: code-audit
+    files: [spendetector/webhook.py, spendetector/worker.py]
+    criteria: "Webhook verifies the X-Telegram-Bot-Api-Secret-Token header against TELEGRAM_WEBHOOK_SECRET, and the worker rejects senders whose chat id != TELEGRAM_ALLOWED_CHAT_ID."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  # ---------------------------------------------------------------------------
+  # E. Insight & cold start
+  # ---------------------------------------------------------------------------
+  - id: E1
+    name: "Insight ladder + cold-start path unit-tested"
+    type: automated
+    command: "cd /Users/joyd/Spendetector && python -m pytest -q tests/test_insight.py"
+    expected: "0"
+    comparison_mode: exit_code
+    side_effects: false
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: E2
+    name: "Price-move insight fires at >=10% on a repeat item, biggest absolute mover wins"
+    type: code-audit
+    files: [spendetector/insight.py, tests/test_insight.py]
+    criteria: "compute_insight returns a price-move insight when a repeat item moved >=10% vs its most recent prior different-date price, choosing the biggest absolute mover; output includes old and new price."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: E3
+    name: "Cold start never fabricates a delta"
+    type: code-audit
+    files: [spendetector/insight.py, tests/test_insight.py]
+    criteria: "With no prior history, compute_insight returns the composition/promise line (no invented percentage). A test asserts no price-delta is produced when history is empty."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  # ---------------------------------------------------------------------------
+  # F. Privacy & security
+  # ---------------------------------------------------------------------------
+  - id: F1
+    name: "No card digits persisted anywhere (schema, Notion write, logs)"
+    type: code-audit
+    files: [spendetector/extract.py, spendetector/notion_io.py, spendetector/worker.py]
+    criteria: "End to end, no card/account/last-4 value is extracted, written to Notion, or logged. Verified by tracing the data path from parse to write."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: F2
+    name: "Secrets inventory complete and externalized"
+    type: code-audit
+    files: [spendetector/app.py, README.md]
+    criteria: "All of TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET, TELEGRAM_ALLOWED_CHAT_ID, OPENAI_API_KEY, NOTION_TOKEN, SPENDETECTOR_RECEIPTS_DB_ID, SPENDETECTOR_ITEMS_DB_ID, NOTION_DASHBOARD_URL are referenced from the spendetector-secrets Modal secret and documented; none hardcoded."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: F3
+    name: "OpenAI retention/training opt-out confirmed for the project"
+    type: code-audit
+    files: [README.md, .vault/plans/2026-06-04-spendetector-plan.md]
+    criteria: "A documented step confirms the OpenAI org/project used has data retention and training opt-out enabled (account setting, not an API param). Marked done before the demo."
+    status: pending
+    retries: 0
+    blocked_reason: "manual OpenAI dashboard confirmation by JJ"
+
+  # ---------------------------------------------------------------------------
+  # G. Bot copy (one-shot UX)
+  # ---------------------------------------------------------------------------
+  - id: G1
+    name: "Bot is one-shot: confirmation + ONE insight + tap-through link"
+    type: code-audit
+    files: [spendetector/worker.py, spendetector/insight.py]
+    criteria: "Per receipt the bot sends exactly one reply: a short confirmation (store, total, item count), one insight line, and a plain-language tap-through link. No conversational free-text Q&A path exists."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: G2
+    name: "Three reply cases present with warm copy, no em dashes, no jargon"
+    type: code-audit
+    files: [spendetector/worker.py]
+    criteria: "Distinct, warm, grandma-simple copy exists for (a) scan-with-insight, (b) first-scan/cold-start, (c) non-receipt/failed image. No em dashes, no error codes, no 'extraction failed' jargon. Link labelled as a destination."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  - id: G3
+    name: "No em dashes anywhere in user-facing strings"
+    type: automated
+    command: "cd /Users/joyd/Spendetector && ! grep -RIn $'\\u2014' spendetector"
+    expected: "0"
+    comparison_mode: exit_code
+    side_effects: false
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  # ---------------------------------------------------------------------------
+  # H. Notion dashboard (manual UI verify)
+  # ---------------------------------------------------------------------------
+  - id: H1
+    name: "Dashboard built: hero insight callout first, then price line, then numbers, donut, weekly bars, gallery, collapsed table"
+    type: code-audit
+    files: [.vault/plans/2026-06-04-spendetector-plan.md]
+    criteria: "The Notion Spendetector page is assembled in the order locked in plan section 6.1, with the price-creep hero callout at the top and the raw item table collapsed below the fold. Verified by opening the page (manual)."
+    status: pending
+    retries: 0
+    blocked_reason: "manual Notion UI build (API cannot create chart blocks)"
+
+  - id: H2
+    name: "Per-item price chart renders a real line on the hero-item filtered view"
+    type: code-audit
+    files: [.vault/plans/2026-06-04-spendetector-plan.md]
+    criteria: "A filtered Items view (Norm Name == hero item) drives a line chart of Unit Price over Date that renders real points from JJ's seeded receipts. Verified by opening on a phone (manual)."
+    status: pending
+    retries: 0
+    blocked_reason: "needs seeded real receipts + manual chart build"
+
+  - id: H3
+    name: "Budget progress bar is NOT on the demo dashboard"
+    type: code-audit
+    files: [.vault/plans/2026-06-04-spendetector-plan.md]
+    criteria: "Per the locked cut, no budget progress bar appears on the Jun 12 dashboard."
+    status: pending
+    retries: 0
+    blocked_reason: null
+
+  # ---------------------------------------------------------------------------
+  # I. Live E2E (the mandatory gate, CLAUDE.md 3.13)
+  # ---------------------------------------------------------------------------
+  - id: I1
+    name: "LIVE: real phone + real bot + real receipt -> bot replies with summary + one insight + working link"
+    type: code-audit
+    files: [docs/live-e2e-evidence.md]
+    criteria: "On the deployed Modal build, from a real phone in the real Telegram bot, a real receipt photo yields a reply within a few seconds containing store/total/count + one insight + a tap-through link. Evidence (screenshot + timing) captured. Green tests do NOT satisfy this check."
+    status: pending
+    retries: 0
+    blocked_reason: "requires deployed build + JJ phone + real receipt"
+
+  - id: I2
+    name: "LIVE: tapping the link opens the dashboard on the phone"
+    type: code-audit
+    files: [docs/live-e2e-evidence.md]
+    criteria: "Tapping the reply link opens the Spendetector dashboard on the phone and the just-scanned data is visible. Evidence captured."
+    status: pending
+    retries: 0
+    blocked_reason: "requires deployed build + JJ phone"
+
+  - id: I3
+    name: "LIVE: Items DB has one row per line item with correct price, category from the 8, Norm Name populated"
+    type: code-audit
+    files: [docs/live-e2e-evidence.md]
+    criteria: "After a live scan, the Items DB shows one row per line item with correct Unit Price, a Category from the fixed 8, and a populated Norm Name. Verified against the physical receipt."
+    status: pending
+    retries: 0
+    blocked_reason: "requires deployed build + real receipt"
+
+  - id: I4
+    name: "LIVE: re-sending the SAME photo creates NO duplicate row (idempotency live)"
+    type: code-audit
+    files: [docs/live-e2e-evidence.md]
+    criteria: "Re-sending an already-processed receipt photo produces no duplicate Receipt or Item rows and no duplicate reply. Verified live."
+    status: pending
+    retries: 0
+    blocked_reason: "requires deployed build"
+
+  - id: I5
+    name: "LIVE: full path works over CELLULAR (not just home Wi-Fi), run twice"
+    type: code-audit
+    files: [docs/live-e2e-evidence.md]
+    criteria: "The end-to-end snap-to-Notion-to-reply path is verified at least once over cellular and run with two different receipts, since the demo runs on a hotspot."
+    status: pending
+    retries: 0
+    blocked_reason: "requires deployed build + JJ phone on cellular"
+
+  - id: I6
+    name: "Demo dry-run: pre-seeded real receipts make the dashboard look alive and the hero price gap is real"
+    type: code-audit
+    files: [docs/live-e2e-evidence.md, .vault/plans/2026-06-04-spendetector-plan.md]
+    criteria: "Before Jun 12, JJ's own real receipts are seeded so the donut, weekly bars, and the hero-item price line are populated with TRUE data, and the advertised price-change percentage matches what her real receipts show (no fabricated number)."
+    status: pending
+    retries: 0
+    blocked_reason: "needs JJ seeding real receipts over the week"

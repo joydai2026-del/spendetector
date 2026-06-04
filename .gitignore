@@ -2,9 +2,15 @@
 .vault/
 .env
 .env.*
+!.env.example
 __pycache__/
 *.pyc
+*.py[cod]
 .venv/
 node_modules/
 .DS_Store
 secrets/
+.pytest_cache/
+.ruff_cache/
+.modal/
+*.egg-info/
