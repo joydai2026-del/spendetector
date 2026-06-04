@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product 1 Plan · Receipts (Demo Focus)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{--bg:#faf8f4;--card:#fff;--ink:#1c1c1e;--muted:#6b6a66;--line:#e7e3da;--violet:#5b3df5;--violet-soft:#efeaff;--blue:#2563c9;--green:#0a8f5b;--green-soft:#e6f5ee;--amber:#b7791f;--amber-soft:#fbf2dd;--rose:#c2255c;--rose-soft:#fce7ef;--teal:#0d9488;--teal-soft:#e0f2f0;--shadow:0 1px 2px rgba(20,18,12,.04),0 6px 22px rgba(20,18,12,.06)}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans","Noto Sans SC",system-ui,-apple-system,sans-serif;line-height:1.6;font-size:16px}
+  .wrap{max-width:1060px;margin:0 auto;padding:40px 22px 90px}
+  header.hero{background:linear-gradient(135deg,#7a1d3f 0%,#c2255c 55%,#b7791f 100%);color:#fff;border-radius:22px;padding:36px 32px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header.hero:after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);border-radius:50%}
+  .eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;opacity:.85}
+  header.hero h1{font-size:29px;line-height:1.16;margin:12px 0 8px;font-weight:800}
+  header.hero p{margin:6px 0 0;font-size:16px;max-width:760px;opacity:.95}
+  .pillrow{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px}
+  .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);padding:6px 13px;border-radius:999px;font-size:13px;font-weight:600}
+  h2{font-size:22px;font-weight:800;margin:44px 0 6px}h2 .num{color:var(--rose)}
+  h3{font-size:18px;font-weight:700;margin:22px 0 8px}
+  .lead{color:var(--muted);margin:2px 0 16px;font-size:15.5px}
+  p{margin:10px 0}a{color:var(--violet);text-decoration:none;border-bottom:1px solid rgba(91,61,245,.25)}
+  code{background:#f1eee7;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:13px;color:#3a2f6e}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 4px}
+  .toc a{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:600;color:var(--ink)}
+  .callout{border-radius:14px;padding:16px 18px;margin:16px 0;font-size:14.5px}
+  .c-rose{background:var(--rose-soft);border:1px solid #f4c2d6}.c-teal{background:var(--teal-soft);border:1px solid #b6e0da}.c-green{background:var(--green-soft);border:1px solid #bfe6d3}.c-amber{background:var(--amber-soft);border:1px solid #efdcb0}
+  .callout .h{display:block;font-weight:800;margin-bottom:4px;font-size:14px;letter-spacing:.02em;text-transform:uppercase}
+  .c-rose .h{color:var(--rose)}.c-teal .h{color:var(--teal)}.c-green .h{color:var(--green)}.c-amber .h{color:var(--amber)}
+  .mermaid{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0;text-align:center;box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f3f0ea;font-weight:700;font-size:12.5px}tr:last-child td{border-bottom:none}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr}.wrap{padding:26px 15px 70px}header.hero h1{font-size:23px}}
+  .phone{max-width:320px;margin:0 auto;background:#0f0f0f;border-radius:26px;padding:10px;box-shadow:var(--shadow)}
+  .phone .scr{background:#e9e7e1;border-radius:18px;padding:13px;font-size:13px}
+  .bub{background:#fff;border-radius:12px;padding:8px 11px;margin:7px 0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .bub.me{background:#cde6ff;margin-left:36px}.bub.bot{margin-right:36px}.link{color:#2563c9;text-decoration:underline}
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .chartbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .chartbox .cap{font-size:12px;color:var(--muted);margin-top:8px}
+  .donut{width:120px;height:120px;border-radius:50%;margin:6px auto;position:relative;background:conic-gradient(var(--teal) 0 32%,var(--violet) 32% 55%,var(--amber) 55% 72%,var(--rose) 72% 86%,#9fb0c9 86% 100%)}
+  .donut::after{content:"";position:absolute;inset:18px;background:var(--card);border-radius:50%}
+  .donut .mid{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;text-align:center}
+  .legend{font-size:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
+  .legend span{display:flex;align-items:center;gap:4px}.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .bars{display:flex;flex-direction:column;gap:7px}.bar{display:grid;grid-template-columns:60px 1fr 44px;align-items:center;gap:8px;font-size:12.5px}
+  .bar .fill{height:14px;border-radius:7px;background:linear-gradient(90deg,#c2255c,#b7791f)}
+  .step{display:flex;gap:12px;margin:10px 0}.step .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--rose);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .foot{margin-top:46px;color:var(--muted);font-size:13px;text-align:center;border-top:1px solid var(--line);padding-top:20px}
+  ul{margin:6px 0 6px 2px;padding-left:18px}li{margin:4px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Product 1 of 2 · The Demo</div>
+  <h1>Receipts: see what your bank can't</h1>
+  <p>Snap a receipt on your phone, the cloud reads every line item, and your Notion dashboard shows the spending habits a bank statement hides. This is the Jun 12 demo. Cloud-first on Modal, never your Mac, about $0 to $10 a month.</p>
+  <div class="pillrow"><span class="pill">🎯 Demo focus</span><span class="pill">📱 Telegram capture</span><span class="pill">☁️ Modal + GPT-4o</span><span class="pill">🗄️ Notion dashboard</span></div>
+</header>
+<div class="toc"><a href="#why">Why</a><a href="#loop">The mobile loop</a><a href="#dash">Dashboard</a><a href="#tech">Tech</a><a href="#demo">Demo script</a><a href="#build">Build plan</a><a href="#open">Open decisions</a></div>
+
+<h2 id="why"><span class="num">1.</span> Why this wins</h2>
+<div class="callout c-rose"><span class="h">The real gap</span>
+  Copilot, Rocket Money, Cleo, and Spendee all categorize the <b>bank total</b> ("Walmart $87"), never the items. Only reward apps like Fetch read items, and they <b>sell your data to brands</b>. So the honest, unserved product is: read your line items, keep the data yours. Your one-line demo pitch writes itself: <i>"your bank says $87 at Target. Mine says your shampoo quietly went up 18% since February."</i>
+</div>
+<p>What line items unlock that totals never can: <b>per-item price history</b> (shrinkflation made visible), <b>hidden leaks</b> (3 to 4 surprise ones surface within ~2 months of scanning), and real <b>frequency and brand patterns</b> ("coffee 4x this week").</p>
+
+<h2 id="loop"><span class="num">2.</span> The mobile loop (your exact ask)</h2>
+<div class="grid2">
+  <div>
+    <div class="mermaid">
+flowchart TD
+  A["📷 Snap receipt in Telegram"] --> B["Modal webhook (cloud)"]
+  B --> C["GPT-4o vision → line items JSON"]
+  C --> D[("Notion: dashboard updates")]
+  D --> E["Bot replies with a tap-through link"]
+  E --> F["📱 You open the insight on your phone"]
+  classDef r fill:#fce7ef,stroke:#c2255c,color:#7a1d3f;class B,C r;
+    </div>
+  </div>
+  <div>
+    <div class="phone"><div class="scr">
+      <div class="bub me">📷 [receipt photo]</div>
+      <div class="bub bot"><b>Whole Foods · $42.10 · 12 items</b><br>Logged ✓ · biggest: salmon $14.99<br><span style="color:#0d9488">⚠ oat milk up 18% since March</span><br><span class="link">→ Open this week's insights</span></div>
+      <div class="bub me">why so much on snacks</div>
+      <div class="bub bot">$31 on snacks this week, 2x your usual. Want a weekly cap?</div>
+    </div></div>
+    <p class="lead" style="text-align:center">Snap → cloud builds the Notion view → tap-through link back. Mobile, always.</p>
+  </div>
+</div>
+<h3>The blend (everything you wanted)</h3>
+<table>
+  <tr><th>Feature</th><th>What it does</th></tr>
+  <tr><td>Zero-friction capture</td><td>Just a photo. No forms, no typing.</td></tr>
+  <tr><td>Per-item price history</td><td>Tap any product, see its price over time and stores.</td></tr>
+  <tr><td>Shrinkflation alerts</td><td>"Your oat milk went $4.49 → $5.29 since March."</td></tr>
+  <tr><td>Spending habits</td><td>Category, frequency, brand loyalty, impulse rate.</td></tr>
+  <tr><td>Quick insight + weekly recap</td><td>One useful line now; a Sunday "rehab" summary.</td></tr>
+</table>
+
+<h2 id="dash"><span class="num">3.</span> The Notion dashboard (illustrative)</h2>
+<div class="charts">
+  <div class="chartbox">
+    <div class="donut"><div class="mid">$612<br><span style="font-size:10px;font-weight:600;color:var(--muted)">this month</span></div></div>
+    <div class="legend"><span><i class="sw" style="background:var(--teal)"></i>Groceries</span><span><i class="sw" style="background:var(--violet)"></i>Dining</span><span><i class="sw" style="background:var(--amber)"></i>Coffee</span><span><i class="sw" style="background:var(--rose)"></i>Snacks</span></div>
+    <div class="cap">Spend by category</div>
+  </div>
+  <div class="chartbox">
+    <div class="bars">
+      <div class="bar"><span>Wk 1</span><span class="fill" style="width:55%"></span><span>$118</span></div>
+      <div class="bar"><span>Wk 2</span><span class="fill" style="width:72%"></span><span>$154</span></div>
+      <div class="bar"><span>Wk 3</span><span class="fill" style="width:40%"></span><span>$86</span></div>
+      <div class="bar"><span>Wk 4</span><span class="fill" style="width:60%"></span><span>$128</span></div>
+    </div>
+    <div class="cap">Spend by week</div>
+  </div>
+</div>
+<div class="chartbox" style="margin-top:14px">
+  <svg viewBox="0 0 260 64" width="100%" height="64" preserveAspectRatio="none"><polyline fill="none" stroke="#c2255c" stroke-width="2.5" points="0,48 52,46 104,40 156,30 208,24 260,16"/><circle cx="260" cy="16" r="3.5" fill="#c2255c"/></svg>
+  <div class="cap">Oat milk unit price over time, the thing a bank total hides</div>
+</div>
+<p class="lead">Layout: a line-items database (item, qty, unit price, category, merchant, date) plus a donut, weekly bars, a budget progress bar, per-item price charts, and a gallery of receipt photos. The bot writes plain number and select fields, because Notion charts cannot use formulas or rollups on an axis.</p>
+
+<h2 id="tech"><span class="num">4.</span> Tech &amp; cost</h2>
+<div class="grid2">
+  <table style="margin:0"><tr><th>Layer</th><th>Choice</th></tr>
+    <tr><td>Capture</td><td>Telegram bot (reuse your personal one)</td></tr>
+    <tr><td>Cloud</td><td>Modal webhook (free tier, Modal ships a receipt-OCR example)</td></tr>
+    <tr><td>Extraction</td><td>GPT-4o vision → strict JSON, ~90% line-item accuracy</td></tr>
+    <tr><td>Store + charts</td><td>Notion (free API)</td></tr>
+  </table>
+  <table style="margin:0"><tr><th>Cost</th><th>Monthly</th></tr>
+    <tr><td>Modal compute</td><td>~$0 (inside $30 free credit)</td></tr>
+    <tr><td>Notion + Telegram</td><td>$0</td></tr>
+    <tr><td>GPT-4o vision (~30/day)</td><td>~$3-9</td></tr>
+    <tr><td><b>Total</b></td><td><b>~$0-10</b></td></tr>
+  </table>
+</div>
+<div class="callout c-amber"><span class="h">Privacy (a differentiator)</span>
+  Receipts are sensitive (merchant, items, card last-4). Unlike Fetch, we <b>never sell your data</b>. Strip card digits, encrypt stored images, one-tap export and delete, and use OpenAI vision with retention/training opt-out.</div>
+
+<h2 id="demo"><span class="num">5.</span> Demo script (Jun 12)</h2>
+<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px">
+  <div class="step"><div class="n">1</div><div><b>The hook (10s):</b> "Your bank knows you spent $87 at Target. It has no idea what you actually bought. Mine does."</div></div>
+  <div class="step"><div class="n">2</div><div><b>Live snap (20s):</b> photograph a real receipt in Telegram on your phone, on screen. Rows appear in Notion in seconds.</div></div>
+  <div class="step"><div class="n">3</div><div><b>The wow (15s):</b> the bot replies "oat milk up 18% since March." Show the per-item price chart. "No budgeting app can show you this."</div></div>
+  <div class="step"><div class="n">4</div><div><b>The habit (10s):</b> show the weekly category donut. "Two minutes a week, and I finally see my real habits."</div></div>
+  <div class="step"><div class="n">5</div><div><b>Close (10s):</b> "Built with Claude Code, reviewed by a second AI model, running serverless for about the cost of a coffee a month."</div></div>
+  <div class="callout c-rose" style="margin:12px 0 0"><span class="h">Stage safety</span> Pre-seed a few receipts so the dashboard looks alive. Have a recorded clip of the perfect snap as a fallback. Use your own hotspot.</div>
+</div>
+
+<h2 id="build"><span class="num">6.</span> Build plan (lean, it's small)</h2>
+<table>
+  <tr><th>Step</th><th>What</th></tr>
+  <tr><td>1. Notion</td><td>Create the line-items database + chart views (category donut, weekly bar, price line, receipt gallery).</td></tr>
+  <tr><td>2. Modal spine</td><td>Telegram webhook endpoint on Modal; receive photo, fetch file, spawn job.</td></tr>
+  <tr><td>3. Extraction</td><td>GPT-4o vision → JSON schema; write rows to Notion via the API.</td></tr>
+  <tr><td>4. Reply</td><td>Compute the one insight (price delta / category spike) + reply with the Notion link.</td></tr>
+  <tr><td>5. Weekly recap</td><td>A <code>modal.Cron</code> Sunday summary to your phone.</td></tr>
+  <tr><td>6. Review + rehearse</td><td>Context-free + Codex review gate, then rehearse the demo end-to-end.</td></tr>
+</table>
+
+<h2 id="open"><span class="num">7.</span> Open decisions</h2>
+<ul>
+  <li><b>Telegram bot:</b> reuse your existing personal bot token, or a fresh one for receipts?</li>
+  <li><b>Notion target:</b> which personal page should host the Spending dashboard (you share it with the integration)?</li>
+  <li><b>Categories:</b> your category list (groceries, dining, coffee, snacks, household, ...), or let the model infer and you correct?</li>
+  <li><b>Card digits:</b> confirm we strip and never store them.</li>
+</ul>
+<div class="callout c-green"><span class="h">Next</span> Confirm the four above, then office-hours → planning-pipeline (locks success criteria), then build on Modal with the review gate. This is the smaller, paved build and it proves the whole stack that Product 2 reuses.</div>
+
+<div class="foot">Product 1 plan · 2026-06-04 · <code>wiki/ai-ml/product-1-receipts-plan.html</code><br>Sibling doc: <code>product-2-evolution-plan.html</code> · Charts are illustrative mockups.</div>
+</div>
+<script>mermaid.initialize({startOnLoad:true,theme:'base',themeVariables:{fontFamily:'Plus Jakarta Sans, sans-serif',primaryColor:'#fce7ef',primaryBorderColor:'#c2255c',primaryTextColor:'#7a1d3f',lineColor:'#caa'}});</script>
+</body>
+</html>
