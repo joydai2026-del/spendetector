@@ -86,7 +86,13 @@ def bucket_month(date_iso: str) -> str:
 def find_receipt_by_image_hash(image_hash: str, *, client: httpx.Client | None = None) -> bool:
     db = env("SPENDETECTOR_RECEIPTS_DB_ID")
     payload = {
-        "filter": {"property": "Image Hash", "rich_text": {"equals": image_hash}},
+        "filter": {
+            "and": [
+                {"property": "Image Hash", "rich_text": {"equals": image_hash}},
+                # ignore a fully-failed prior attempt so a resend is allowed to retry
+                {"property": "Status", "select": {"does_not_equal": "failed"}},
+            ]
+        },
         "page_size": 1,
     }
     return bool(_post(f"/databases/{db}/query", payload, client).get("results"))

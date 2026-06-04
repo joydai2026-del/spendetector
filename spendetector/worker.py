@@ -92,12 +92,15 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
         insight = compute_insight(receipt.items, prior)
 
         result = notion.write_receipt(receipt, update_id, image_hash=image_hash)
-        if seen is not None:
-            seen[update_id] = True  # mark complete only after the write succeeded
 
         if result.get("failed_items", 0) >= len(receipt.items):
+            # Every item failed: do NOT mark seen, so a retry or resend can re-attempt
+            # (the dedup guard also ignores failed receipts).
             telegram.send_message(chat_id, reply.failed_reply())
             return {"status": "write_failed", "receipt": result}
+
+        if seen is not None:
+            seen[update_id] = True  # mark complete only after a successful or partial write
 
         low_conf = sum(1 for it in receipt.items if (it.confidence or 1.0) < _LOW_CONFIDENCE)
         telegram.send_message(chat_id, reply.compose_reply(receipt, insight, low_conf=low_conf))

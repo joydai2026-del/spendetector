@@ -67,7 +67,10 @@ def compute_insight(
             "cold_start",
         )
 
-    biggest = max(items, key=lambda i: i.total or 0, default=None)
-    if biggest is not None:
+    # Only items with a numeric total can be the "biggest" (total may be None after a degraded
+    # parse); never format None as dollars.
+    priced = [i for i in items if i.total is not None]
+    if priced:
+        biggest = max(priced, key=lambda i: i.total)
         return Insight(f"Biggest item: {biggest.name} at ${biggest.total:.2f}.", "biggest")
     return Insight("Saved.", "biggest")

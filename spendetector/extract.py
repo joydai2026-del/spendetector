@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import datetime as dt
 import json
+import math
 import re
 from dataclasses import dataclass, field
 
@@ -120,9 +121,10 @@ def _coerce_category(value) -> str:
 
 def _to_float(value) -> float | None:
     try:
-        return float(value)
+        result = float(value)
     except (TypeError, ValueError):
         return None
+    return result if math.isfinite(result) else None  # reject NaN / Infinity
 
 
 def _valid_iso_date(value) -> str | None:
