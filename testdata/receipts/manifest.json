@@ -1,0 +1,882 @@
+[
+  {
+    "file": "receipt_01.png",
+    "store": "WHOLE FOODS MARKET",
+    "date": "2026-03-27",
+    "items": [
+      {
+        "name": "Oat Milk 64oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 4.49,
+        "total": 4.49
+      },
+      {
+        "name": "Eggs Large Dozen",
+        "category": "dairy",
+        "qty": 2,
+        "unit_price": 3.99,
+        "total": 7.98
+      },
+      {
+        "name": "Chicken Breast",
+        "category": "protein",
+        "qty": 1.67,
+        "unit_price": 5.99,
+        "total": 10.0
+      },
+      {
+        "name": "Greek Yogurt 32oz",
+        "category": "dairy",
+        "qty": 2,
+        "unit_price": 5.49,
+        "total": 10.98
+      },
+      {
+        "name": "Bananas",
+        "category": "fruit",
+        "qty": 1.56,
+        "unit_price": 0.59,
+        "total": 0.92
+      },
+      {
+        "name": "Blueberries Pint",
+        "category": "fruit",
+        "qty": 1,
+        "unit_price": 5.01,
+        "total": 5.01
+      },
+      {
+        "name": "Whole Milk Gallon",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 3.94,
+        "total": 3.94
+      },
+      {
+        "name": "Dish Soap",
+        "category": "household",
+        "qty": 2,
+        "unit_price": 4.0,
+        "total": 8.0
+      },
+      {
+        "name": "Sweet Potato",
+        "category": "veggie",
+        "qty": 1.82,
+        "unit_price": 1.29,
+        "total": 2.35
+      },
+      {
+        "name": "Ribeye Steak",
+        "category": "protein",
+        "qty": 1.82,
+        "unit_price": 14.57,
+        "total": 26.52
+      }
+    ],
+    "subtotal": 80.19,
+    "tax": 0.7,
+    "total": 80.89,
+    "card_line": "VISA ****4821"
+  },
+  {
+    "file": "receipt_02.png",
+    "store": "TRADER JOE'S",
+    "date": "2026-04-03",
+    "items": [
+      {
+        "name": "Oat Milk 64oz",
+        "category": "dairy",
+        "qty": 2,
+        "unit_price": 4.58,
+        "total": 9.16
+      },
+      {
+        "name": "Eggs Large Dozen",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 4.16,
+        "total": 4.16
+      },
+      {
+        "name": "Chicken Breast",
+        "category": "protein",
+        "qty": 1.49,
+        "unit_price": 6.1,
+        "total": 9.09
+      },
+      {
+        "name": "Greek Yogurt 32oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.55,
+        "total": 5.55
+      },
+      {
+        "name": "Bananas",
+        "category": "fruit",
+        "qty": 1.54,
+        "unit_price": 0.6,
+        "total": 0.92
+      },
+      {
+        "name": "Dish Soap",
+        "category": "household",
+        "qty": 1,
+        "unit_price": 3.85,
+        "total": 3.85
+      },
+      {
+        "name": "Ribeye Steak",
+        "category": "protein",
+        "qty": 2.18,
+        "unit_price": 14.44,
+        "total": 31.48
+      },
+      {
+        "name": "Honeycrisp Apples",
+        "category": "fruit",
+        "qty": 1.41,
+        "unit_price": 3.52,
+        "total": 4.96
+      },
+      {
+        "name": "Cashews 16oz",
+        "category": "nuts",
+        "qty": 1,
+        "unit_price": 8.34,
+        "total": 8.34
+      },
+      {
+        "name": "Cheddar Cheese",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.97,
+        "total": 5.97
+      },
+      {
+        "name": "Carrots 2lb",
+        "category": "veggie",
+        "qty": 1,
+        "unit_price": 1.81,
+        "total": 1.81
+      },
+      {
+        "name": "Sweet Potato",
+        "category": "veggie",
+        "qty": 2.18,
+        "unit_price": 1.29,
+        "total": 2.81
+      },
+      {
+        "name": "Salmon Fillet",
+        "category": "protein",
+        "qty": 1.5,
+        "unit_price": 11.74,
+        "total": 17.61
+      }
+    ],
+    "subtotal": 105.71,
+    "tax": 0.34,
+    "total": 106.05,
+    "card_line": "DEBIT ****7193"
+  },
+  {
+    "file": "receipt_03.png",
+    "store": "SPROUTS FARMERS MARKET",
+    "date": "2026-04-10",
+    "items": [
+      {
+        "name": "Oat Milk 64oz",
+        "category": "dairy",
+        "qty": 2,
+        "unit_price": 4.67,
+        "total": 9.34
+      },
+      {
+        "name": "Eggs Large Dozen",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 4.32,
+        "total": 4.32
+      },
+      {
+        "name": "Chicken Breast",
+        "category": "protein",
+        "qty": 2.09,
+        "unit_price": 6.21,
+        "total": 12.98
+      },
+      {
+        "name": "Greek Yogurt 32oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.6,
+        "total": 5.6
+      },
+      {
+        "name": "Bananas",
+        "category": "fruit",
+        "qty": 1.08,
+        "unit_price": 0.61,
+        "total": 0.66
+      },
+      {
+        "name": "Cream Cheese",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 3.06,
+        "total": 3.06
+      },
+      {
+        "name": "Whole Milk Gallon",
+        "category": "dairy",
+        "qty": 2,
+        "unit_price": 3.68,
+        "total": 7.36
+      },
+      {
+        "name": "Walnuts 12oz",
+        "category": "nuts",
+        "qty": 1,
+        "unit_price": 7.23,
+        "total": 7.23
+      },
+      {
+        "name": "Broccoli Crown",
+        "category": "veggie",
+        "qty": 1.93,
+        "unit_price": 2.42,
+        "total": 4.67
+      },
+      {
+        "name": "Bell Peppers",
+        "category": "veggie",
+        "qty": 1,
+        "unit_price": 3.51,
+        "total": 3.51
+      },
+      {
+        "name": "Ribeye Steak",
+        "category": "protein",
+        "qty": 1.0,
+        "unit_price": 14.79,
+        "total": 14.79
+      },
+      {
+        "name": "Carrots 2lb",
+        "category": "veggie",
+        "qty": 1,
+        "unit_price": 1.82,
+        "total": 1.82
+      }
+    ],
+    "subtotal": 75.34,
+    "tax": 0.0,
+    "total": 75.34,
+    "card_line": null
+  },
+  {
+    "file": "receipt_04.png",
+    "store": "SAFEWAY",
+    "date": "2026-04-17",
+    "items": [
+      {
+        "name": "Oat Milk 64oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 4.76,
+        "total": 4.76
+      },
+      {
+        "name": "Eggs Large Dozen",
+        "category": "dairy",
+        "qty": 2,
+        "unit_price": 4.49,
+        "total": 8.98
+      },
+      {
+        "name": "Chicken Breast",
+        "category": "protein",
+        "qty": 1.09,
+        "unit_price": 6.32,
+        "total": 6.89
+      },
+      {
+        "name": "Greek Yogurt 32oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.66,
+        "total": 5.66
+      },
+      {
+        "name": "Bananas",
+        "category": "fruit",
+        "qty": 1.07,
+        "unit_price": 0.62,
+        "total": 0.66
+      },
+      {
+        "name": "Red Grapes",
+        "category": "fruit",
+        "qty": 2.03,
+        "unit_price": 4.57,
+        "total": 9.28
+      },
+      {
+        "name": "Olive Oil 500ml",
+        "category": "other",
+        "qty": 1,
+        "unit_price": 9.94,
+        "total": 9.94
+      },
+      {
+        "name": "Raw Almonds 16oz",
+        "category": "nuts",
+        "qty": 1,
+        "unit_price": 7.69,
+        "total": 7.69
+      },
+      {
+        "name": "Paper Towels 6pk",
+        "category": "household",
+        "qty": 1,
+        "unit_price": 8.28,
+        "total": 8.28
+      },
+      {
+        "name": "Ground Beef",
+        "category": "protein",
+        "qty": 1.6,
+        "unit_price": 6.58,
+        "total": 10.53
+      }
+    ],
+    "subtotal": 72.67,
+    "tax": 0.72,
+    "total": 73.39,
+    "card_line": "VISA ****4821"
+  },
+  {
+    "file": "receipt_05.png",
+    "store": "COSTCO WHOLESALE",
+    "date": "2026-04-24",
+    "items": [
+      {
+        "name": "Oat Milk 64oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 4.85,
+        "total": 4.85
+      },
+      {
+        "name": "Eggs Large Dozen",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 4.66,
+        "total": 4.66
+      },
+      {
+        "name": "Chicken Breast",
+        "category": "protein",
+        "qty": 0.98,
+        "unit_price": 6.43,
+        "total": 6.3
+      },
+      {
+        "name": "Greek Yogurt 32oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.71,
+        "total": 5.71
+      },
+      {
+        "name": "Bananas",
+        "category": "fruit",
+        "qty": 1.02,
+        "unit_price": 0.63,
+        "total": 0.64
+      },
+      {
+        "name": "Roma Tomatoes",
+        "category": "veggie",
+        "qty": 1.99,
+        "unit_price": 3.2,
+        "total": 6.37
+      },
+      {
+        "name": "Walnuts 12oz",
+        "category": "nuts",
+        "qty": 1,
+        "unit_price": 7.59,
+        "total": 7.59
+      },
+      {
+        "name": "Red Grapes",
+        "category": "fruit",
+        "qty": 1.97,
+        "unit_price": 4.39,
+        "total": 8.65
+      },
+      {
+        "name": "Olive Oil 500ml",
+        "category": "other",
+        "qty": 1,
+        "unit_price": 10.01,
+        "total": 10.01
+      },
+      {
+        "name": "Raw Almonds 16oz",
+        "category": "nuts",
+        "qty": 1,
+        "unit_price": 8.31,
+        "total": 8.31
+      }
+    ],
+    "subtotal": 63.09,
+    "tax": 0.0,
+    "total": 63.09,
+    "card_line": null
+  },
+  {
+    "file": "receipt_06.png",
+    "store": "WHOLE FOODS MARKET",
+    "date": "2026-05-01",
+    "items": [
+      {
+        "name": "Oat Milk 64oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 4.93,
+        "total": 4.93
+      },
+      {
+        "name": "Eggs Large Dozen",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 4.82,
+        "total": 4.82
+      },
+      {
+        "name": "Chicken Breast",
+        "category": "protein",
+        "qty": 2.01,
+        "unit_price": 6.55,
+        "total": 13.17
+      },
+      {
+        "name": "Bananas",
+        "category": "fruit",
+        "qty": 1.39,
+        "unit_price": 0.65,
+        "total": 0.9
+      },
+      {
+        "name": "Baby Spinach",
+        "category": "veggie",
+        "qty": 1,
+        "unit_price": 3.92,
+        "total": 3.92
+      },
+      {
+        "name": "Cheddar Cheese",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 6.05,
+        "total": 6.05
+      },
+      {
+        "name": "Blueberries Pint",
+        "category": "fruit",
+        "qty": 2,
+        "unit_price": 4.98,
+        "total": 9.96
+      },
+      {
+        "name": "Navel Oranges",
+        "category": "fruit",
+        "qty": 2.29,
+        "unit_price": 3.96,
+        "total": 9.07
+      },
+      {
+        "name": "Cashews 16oz",
+        "category": "nuts",
+        "qty": 1,
+        "unit_price": 8.21,
+        "total": 8.21
+      },
+      {
+        "name": "Strawberries 1lb",
+        "category": "fruit",
+        "qty": 2,
+        "unit_price": 4.36,
+        "total": 8.72
+      },
+      {
+        "name": "Dish Soap",
+        "category": "household",
+        "qty": 1,
+        "unit_price": 3.91,
+        "total": 3.91
+      },
+      {
+        "name": "Salmon Fillet",
+        "category": "protein",
+        "qty": 1.66,
+        "unit_price": 11.87,
+        "total": 19.7
+      }
+    ],
+    "subtotal": 93.36,
+    "tax": 0.34,
+    "total": 93.7,
+    "card_line": "VISA ****4821"
+  },
+  {
+    "file": "receipt_07.png",
+    "store": "TRADER JOE'S",
+    "date": "2026-05-08",
+    "items": [
+      {
+        "name": "Oat Milk 64oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.02,
+        "total": 5.02
+      },
+      {
+        "name": "Eggs Large Dozen",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 4.99,
+        "total": 4.99
+      },
+      {
+        "name": "Chicken Breast",
+        "category": "protein",
+        "qty": 1.58,
+        "unit_price": 6.66,
+        "total": 10.52
+      },
+      {
+        "name": "Bananas",
+        "category": "fruit",
+        "qty": 1.34,
+        "unit_price": 0.66,
+        "total": 0.88
+      },
+      {
+        "name": "Sweet Potato",
+        "category": "veggie",
+        "qty": 1.3,
+        "unit_price": 1.25,
+        "total": 1.62
+      },
+      {
+        "name": "Whole Milk Gallon",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 3.86,
+        "total": 3.86
+      },
+      {
+        "name": "Cream Cheese",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 3.09,
+        "total": 3.09
+      },
+      {
+        "name": "Ground Beef",
+        "category": "protein",
+        "qty": 2.07,
+        "unit_price": 6.3,
+        "total": 13.04
+      },
+      {
+        "name": "Paper Towels 6pk",
+        "category": "household",
+        "qty": 1,
+        "unit_price": 8.14,
+        "total": 8.14
+      }
+    ],
+    "subtotal": 51.16,
+    "tax": 0.71,
+    "total": 51.87,
+    "card_line": "DEBIT ****7193"
+  },
+  {
+    "file": "receipt_08.png",
+    "store": "SPROUTS FARMERS MARKET",
+    "date": "2026-05-15",
+    "items": [
+      {
+        "name": "Oat Milk 64oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.11,
+        "total": 5.11
+      },
+      {
+        "name": "Eggs Large Dozen",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.16,
+        "total": 5.16
+      },
+      {
+        "name": "Chicken Breast",
+        "category": "protein",
+        "qty": 2.21,
+        "unit_price": 6.77,
+        "total": 14.96
+      },
+      {
+        "name": "Greek Yogurt 32oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.88,
+        "total": 5.88
+      },
+      {
+        "name": "Bananas",
+        "category": "fruit",
+        "qty": 1.45,
+        "unit_price": 0.67,
+        "total": 0.97
+      },
+      {
+        "name": "Cashews 16oz",
+        "category": "nuts",
+        "qty": 1,
+        "unit_price": 8.58,
+        "total": 8.58
+      },
+      {
+        "name": "Paper Towels 6pk",
+        "category": "household",
+        "qty": 1,
+        "unit_price": 8.02,
+        "total": 8.02
+      },
+      {
+        "name": "Bell Peppers",
+        "category": "veggie",
+        "qty": 1,
+        "unit_price": 3.35,
+        "total": 3.35
+      },
+      {
+        "name": "Dish Soap",
+        "category": "household",
+        "qty": 1,
+        "unit_price": 3.88,
+        "total": 3.88
+      },
+      {
+        "name": "Baby Spinach",
+        "category": "veggie",
+        "qty": 1,
+        "unit_price": 3.9,
+        "total": 3.9
+      },
+      {
+        "name": "Avocado",
+        "category": "veggie",
+        "qty": 1,
+        "unit_price": 1.99,
+        "total": 1.99
+      }
+    ],
+    "subtotal": 61.8,
+    "tax": 1.04,
+    "total": 62.84,
+    "card_line": null
+  },
+  {
+    "file": "receipt_09.png",
+    "store": "SAFEWAY",
+    "date": "2026-05-22",
+    "items": [
+      {
+        "name": "Oat Milk 64oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.2,
+        "total": 5.2
+      },
+      {
+        "name": "Eggs Large Dozen",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.32,
+        "total": 5.32
+      },
+      {
+        "name": "Chicken Breast",
+        "category": "protein",
+        "qty": 2.29,
+        "unit_price": 6.88,
+        "total": 15.76
+      },
+      {
+        "name": "Greek Yogurt 32oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.93,
+        "total": 5.93
+      },
+      {
+        "name": "Bananas",
+        "category": "fruit",
+        "qty": 1.02,
+        "unit_price": 0.68,
+        "total": 0.69
+      },
+      {
+        "name": "Red Grapes",
+        "category": "fruit",
+        "qty": 2.24,
+        "unit_price": 4.48,
+        "total": 10.04
+      },
+      {
+        "name": "Whole Milk Gallon",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 3.73,
+        "total": 3.73
+      },
+      {
+        "name": "Navel Oranges",
+        "category": "fruit",
+        "qty": 1.34,
+        "unit_price": 4.06,
+        "total": 5.44
+      },
+      {
+        "name": "Blueberries Pint",
+        "category": "fruit",
+        "qty": 2,
+        "unit_price": 5.06,
+        "total": 10.12
+      },
+      {
+        "name": "Paper Towels 6pk",
+        "category": "household",
+        "qty": 1,
+        "unit_price": 8.25,
+        "total": 8.25
+      },
+      {
+        "name": "Sweet Potato",
+        "category": "veggie",
+        "qty": 0.87,
+        "unit_price": 1.28,
+        "total": 1.11
+      },
+      {
+        "name": "Broccoli Crown",
+        "category": "veggie",
+        "qty": 0.94,
+        "unit_price": 2.45,
+        "total": 2.3
+      }
+    ],
+    "subtotal": 73.89,
+    "tax": 0.72,
+    "total": 74.61,
+    "card_line": "VISA ****4821"
+  },
+  {
+    "file": "receipt_10.png",
+    "store": "COSTCO WHOLESALE",
+    "date": "2026-05-29",
+    "items": [
+      {
+        "name": "Oat Milk 64oz",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.29,
+        "total": 5.29
+      },
+      {
+        "name": "Eggs Large Dozen",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 5.49,
+        "total": 5.49
+      },
+      {
+        "name": "Chicken Breast",
+        "category": "protein",
+        "qty": 1.5,
+        "unit_price": 6.99,
+        "total": 10.48
+      },
+      {
+        "name": "Bananas",
+        "category": "fruit",
+        "qty": 1.51,
+        "unit_price": 0.69,
+        "total": 1.04
+      },
+      {
+        "name": "Paper Towels 6pk",
+        "category": "household",
+        "qty": 1,
+        "unit_price": 8.0,
+        "total": 8.0
+      },
+      {
+        "name": "Roma Tomatoes",
+        "category": "veggie",
+        "qty": 1.97,
+        "unit_price": 3.35,
+        "total": 6.6
+      },
+      {
+        "name": "Cream Cheese",
+        "category": "dairy",
+        "qty": 1,
+        "unit_price": 2.97,
+        "total": 2.97
+      },
+      {
+        "name": "Coffee Beans 12oz",
+        "category": "other",
+        "qty": 1,
+        "unit_price": 13.13,
+        "total": 13.13
+      },
+      {
+        "name": "Sweet Potato",
+        "category": "veggie",
+        "qty": 2.15,
+        "unit_price": 1.29,
+        "total": 2.77
+      },
+      {
+        "name": "Cashews 16oz",
+        "category": "nuts",
+        "qty": 1,
+        "unit_price": 8.82,
+        "total": 8.82
+      },
+      {
+        "name": "Avocado",
+        "category": "veggie",
+        "qty": 1,
+        "unit_price": 1.91,
+        "total": 1.91
+      }
+    ],
+    "subtotal": 66.5,
+    "tax": 0.7,
+    "total": 67.2,
+    "card_line": null
+  }
+]
