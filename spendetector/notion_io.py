@@ -145,6 +145,41 @@ def fetch_prior_prices(
     return out
 
 
+def _item_props(
+    it,
+    *,
+    date_iso: str,
+    week: str,
+    month: str,
+    receipt_id: str,
+    store: str | None,
+) -> dict:
+    """Build the Notion properties for one line item. Pure (no I/O) so it unit-tests.
+
+    Food Group + Health Tier are written as plain selects so Notion's native charts can read
+    them on an axis (a rollup/formula on an axis is not allowed); they power the food-group
+    spending breakdown and the green/yellow/red health bar on the dashboard.
+    """
+    iprops: dict = {
+        "Item": {"title": [{"text": {"content": it.name}}]},
+        "Category": _select(it.category),
+        "Food Group": _select(it.food_group),
+        "Health Tier": _select(it.health_tier),
+        "Date": {"date": {"start": date_iso}},
+        "Week": _select(week),
+        "Month": _select(month),
+        "Receipt": {"relation": [{"id": receipt_id}]},
+    }
+    if it.norm_name:
+        iprops["Norm Name"] = _select(it.norm_name)
+    if store:
+        iprops["Store"] = _select(store)
+    _set_number(iprops, "Qty", it.qty)
+    _set_number(iprops, "Unit Price", it.unit_price)
+    _set_number(iprops, "Line Total", it.total)
+    return iprops
+
+
 # --- The write path ---
 def write_receipt(
     receipt: Receipt,
@@ -187,21 +222,10 @@ def write_receipt(
     week, month = bucket_week(date_iso), bucket_month(date_iso)
     failed = 0
     for it in receipt.items:
-        iprops: dict = {
-            "Item": {"title": [{"text": {"content": it.name}}]},
-            "Category": _select(it.category),
-            "Date": {"date": {"start": date_iso}},
-            "Week": _select(week),
-            "Month": _select(month),
-            "Receipt": {"relation": [{"id": receipt_id}]},
-        }
-        if it.norm_name:
-            iprops["Norm Name"] = _select(it.norm_name)
-        if receipt.store:
-            iprops["Store"] = _select(receipt.store)
-        _set_number(iprops, "Qty", it.qty)
-        _set_number(iprops, "Unit Price", it.unit_price)
-        _set_number(iprops, "Line Total", it.total)
+        iprops = _item_props(
+            it, date_iso=date_iso, week=week, month=month,
+            receipt_id=receipt_id, store=receipt.store,
+        )
         try:
             _post("/pages", {"parent": {"database_id": items_db}, "properties": iprops}, client)
         except httpx.HTTPError:

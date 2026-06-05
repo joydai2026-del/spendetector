@@ -10,7 +10,7 @@ the Notion UI (the Notion API cannot create chart blocks).
 
 from __future__ import annotations
 
-from .config import CATEGORIES, env
+from .config import CATEGORIES, FOOD_GROUP_ORDER, HEALTH_TIERS, env
 from .notion_io import _post
 
 RECEIPTS_PROPERTIES = {
@@ -35,6 +35,8 @@ ITEMS_PROPERTIES = {
     "Item": {"title": {}},
     "Norm Name": {"select": {}},
     "Category": {"select": {"options": [{"name": c} for c in CATEGORIES]}},
+    "Food Group": {"select": {"options": [{"name": g} for g in FOOD_GROUP_ORDER]}},
+    "Health Tier": {"select": {"options": [{"name": t} for t in HEALTH_TIERS]}},
     "Qty": {"number": {}},
     "Unit Price": {"number": {}},
     "Line Total": {"number": {}},

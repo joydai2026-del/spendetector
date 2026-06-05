@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spendetector — Dashboard Redesign</title>
+<style>
+  :root{
+    --ink:#37352f; --muted:#787066; --line:#e9e7e2; --bg:#ffffff; --soft:#f7f6f3;
+    --green:#4f9d69; --greenbg:#edf7f0; --red:#d4493f; --redbg:#fdeceb; --amber:#cb8a2a; --amberbg:#fbf3e4;
+    --blue:#3b6ec9; --bluebg:#eef3fb; --accent:#6a4ce0;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+       color:var(--ink); background:#f3f1ee; margin:0; line-height:1.5; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1080px; margin:0 auto; padding:42px 28px 80px;}
+  h1{font-size:32px; margin:0 0 4px; letter-spacing:-.4px;}
+  .sub{color:var(--muted); font-size:16px; margin:0 0 8px;}
+  .pill{display:inline-block; background:#efeaf7; color:var(--accent); font-size:12px; font-weight:600;
+        padding:3px 10px; border-radius:20px; margin-bottom:22px;}
+  h2{font-size:13px; letter-spacing:.10em; text-transform:uppercase; color:var(--muted);
+     margin:42px 0 14px; font-weight:700;}
+  .note{font-size:13px; color:var(--muted);}
+  .card{background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:20px 22px; margin-bottom:14px;
+        box-shadow:0 1px 2px rgba(0,0,0,.02);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;}
+  @media(max-width:720px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+  /* before */
+  .before{background:#fbfbfa; border:1px dashed #d8d4cc; border-radius:12px; padding:8px 10px;}
+  .blk{display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:8px; margin:7px 0;
+       background:#fff; border:1px solid var(--line); font-size:14px;}
+  .blk .tag{font-size:11px; padding:2px 8px; border-radius:5px; background:#f0eee9; color:var(--muted); font-weight:600;}
+  .x{color:var(--red); font-weight:600;}
+  .annot{color:var(--red); font-size:12.5px; margin:2px 0 0 6px;}
+
+  /* after dashboard mock */
+  .dash{background:#fcfcfb; border:1px solid var(--line); border-radius:14px; padding:22px; }
+  .hero{display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px;
+        padding:6px 4px 16px;}
+  .hero .big{font-size:54px; font-weight:760; letter-spacing:-1.5px; line-height:1;}
+  .hero .lbl{font-size:13px; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:.08em;}
+  .delta{font-size:15px; font-weight:650; padding:5px 12px; border-radius:20px;}
+  .delta.up{background:var(--redbg); color:var(--red);}
+  .delta.down{background:var(--greenbg); color:var(--green);}
+  .watch{background:var(--amberbg); border:1px solid #f0dcae; border-left:4px solid var(--amber);}
+  .watch .h{font-weight:700; color:#9a6612; font-size:14px; margin-bottom:8px; display:flex; gap:7px; align-items:center;}
+  .row{display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:14px; border-bottom:1px solid #f3eee0;}
+  .row:last-child{border-bottom:none;}
+  .mono{font-variant-numeric:tabular-nums;}
+  .up-t{color:var(--red); font-weight:650;}
+  .cardh{font-weight:700; font-size:15px; margin:0 0 12px;}
+
+  /* donut */
+  .donut{display:flex; align-items:center; gap:18px;}
+  .ring{width:104px; height:104px; border-radius:50%;
+        background:conic-gradient(var(--accent) 0 94%, #d7b46a 94% 98.6%, #9bc1b0 98.6% 100%);
+        display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .ring .hole{width:66px; height:66px; border-radius:50%; background:#fff; display:flex; flex-direction:column;
+              align-items:center; justify-content:center;}
+  .ring .hole b{font-size:16px;} .ring .hole span{font-size:10px; color:var(--muted);}
+  .legend{font-size:13.5px; flex:1;}
+  .legend .li{display:flex; align-items:center; gap:8px; padding:3px 0;}
+  .dot{width:10px;height:10px;border-radius:3px; flex:0 0 auto;}
+
+  /* bars */
+  .bar{height:9px; border-radius:5px; background:var(--accent); }
+  .barbg{background:#efeef0; border-radius:5px; flex:1; height:9px;}
+  .hbar{display:flex; align-items:center; gap:10px; padding:5px 0; font-size:13.5px;}
+  .hbar .nm{width:120px; flex:0 0 auto;} .hbar .vl{width:62px; text-align:right; flex:0 0 auto;} .mono.dim{color:var(--muted);}
+
+  /* health traffic */
+  .tl{display:flex; height:16px; border-radius:8px; overflow:hidden; margin-top:6px;}
+  .tl .g{background:var(--green);} .tl .y{background:#e3b94e;} .tl .r{background:var(--red);}
+
+  /* budget */
+  .budget .track{height:14px; border-radius:8px; background:#edeef0; overflow:hidden; margin:10px 0 6px;}
+  .budget .fill{height:100%; background:linear-gradient(90deg,#5aa776,#4f9d69); border-radius:8px;}
+  .slider{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--muted);}
+  .slider input{flex:1;}
+
+  /* sparkline */
+  svg.spark{display:block;}
+
+  /* build table */
+  table{width:100%; border-collapse:collapse; font-size:13.5px; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{background:var(--soft); font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted);}
+  tr:last-child td{border-bottom:none;}
+  .chip{font-size:11px; font-weight:600; padding:2px 8px; border-radius:5px;}
+  .chip.n{background:var(--greenbg); color:var(--green);}      /* notion native */
+  .chip.a{background:var(--bluebg); color:var(--blue);}        /* api once */
+  .chip.b{background:#f3eef9; color:var(--accent);}            /* bot */
+  .chip.m{background:#f5f1e8; color:var(--amber);}             /* manual once */
+
+  .phase{border-left:3px solid var(--accent); padding:4px 0 4px 16px; margin:0 0 18px;}
+  .phase h3{margin:0 0 4px; font-size:16px;}
+  .phase .dep{font-size:12.5px; color:var(--muted);}
+  .legend-key{display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); margin:10px 0 0;}
+  .footer{font-size:12px; color:var(--muted); margin-top:30px; border-top:1px solid var(--line); padding-top:14px;}
+  .real{background:#eef7f1; border:1px solid #cfe8d8; color:#2f6b46; font-size:12.5px; padding:8px 12px; border-radius:8px; margin-bottom:20px;}
+  b.k{color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="pill">Spendetector · Notion dashboard redesign</span>
+  <h1>From "I don't get it" to a 5-second verdict</h1>
+  <p class="sub">The dashboard should answer one question the instant you open it: <b class="k">how am I doing, and what changed?</b></p>
+
+  <div class="real">📊 Every number below is your <b>real seeded Notion data</b> (221 items, Mar–Jun). Layout positions are the proposal; the live dashboard renders your actual rows.</div>
+
+  <!-- ============ BEFORE ============ -->
+  <h2>What the dashboard shows now</h2>
+  <div class="before">
+    <div class="blk"><span class="tag">TABLE</span> Spendetector Receipts <span class="annot x">— raw rows</span></div>
+    <div class="blk"><span class="tag">TABLE</span> Spendetector Items (221 rows) <span class="annot x">← the "wall of rows". This is why it feels unreadable.</span></div>
+    <div class="blk"><span class="tag">CHART</span> <i>Untitled</i> <span class="annot x">— a donut, but no title + 94% is just "Groceries"</span></div>
+    <div class="blk"><span class="tag">CHART</span> <i>Untitled</i> <span class="annot x">— weekly bars, no label, no context</span></div>
+    <div class="blk"><span class="tag">CHART</span> <i>Untitled</i> <span class="annot x">— one hard-coded "oat milk" line</span></div>
+  </div>
+  <p class="note" style="margin-top:10px;">No hero number. No "vs last month." No sentence telling you what any of it means. Two raw tables on top. <b>That is the whole problem.</b></p>
+
+  <!-- ============ AFTER ============ -->
+  <h2>The redesign — verdict first, detail last</h2>
+  <div class="dash">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div>
+        <div class="lbl">Spent this month (June)</div>
+        <div class="big">$500</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="delta up">▲ $153 more than last month</div>
+        <div class="note" style="margin-top:6px;">May was $347 · climbing 4 months straight</div>
+      </div>
+    </div>
+
+    <!-- PRICE WATCH (Shrinkflation Detective) -->
+    <div class="card watch">
+      <div class="h">⚠️ Price Watch — the thing your bank can't see</div>
+      <div class="row"><span><b>Oat milk</b> &nbsp;<span class="note">$4.49 → $5.65 since March</span></span>
+        <span class="up-t mono">+26%</span></div>
+      <div class="row"><span><b>Eggs (dozen)</b> &nbsp;<span class="note">$3.99 → $4.79</span></span>
+        <span class="up-t mono">+20%</span></div>
+      <div style="margin-top:12px;">
+        <div class="note" style="margin-bottom:4px;">Oat milk, every purchase since March:</div>
+        <!-- sparkline of the REAL 13-point oat-milk series 4.49 -> 5.65 -->
+        <svg class="spark" width="100%" height="46" viewBox="0 0 520 46" preserveAspectRatio="none">
+          <polyline fill="none" stroke="#cb8a2a" stroke-width="2.5"
+            points="0,40 43,37 87,32 130,29 173,26 217,23 260,20 303,17 346,14 390,11 433,8 476,5 520,2"/>
+          <circle cx="0" cy="40" r="3" fill="#cb8a2a"/><circle cx="520" cy="2" r="3.5" fill="#d4493f"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <!-- WHERE IT WENT -->
+      <div class="card">
+        <p class="cardh">Where it went</p>
+        <div class="donut">
+          <div class="ring"><div class="hole"><b>$1.2k</b><span>tracked</span></div></div>
+          <div class="legend">
+            <div class="li"><span class="dot" style="background:var(--accent)"></span> Groceries <b class="mono">&nbsp;$1,168</b></div>
+            <div class="li"><span class="dot" style="background:#d7b46a"></span> Household <b class="mono">&nbsp;$60</b></div>
+            <div class="li"><span class="dot" style="background:#9bc1b0"></span> Snacks <b class="mono">&nbsp;$17</b></div>
+          </div>
+        </div>
+        <p class="annot" style="color:var(--amber); margin-top:12px;">⚑ 94% is one bucket. Add <b>Food Group</b> (Produce / Meat / Dairy) for the breakdown that's actually interesting.</p>
+      </div>
+
+      <!-- HABITS / TOP BUYS -->
+      <div class="card">
+        <p class="cardh">What you buy most</p>
+        <div class="hbar"><span class="nm">🍌 Bananas</span><div class="barbg"><div class="bar" style="width:100%"></div></div><span class="vl mono dim">16×</span></div>
+        <div class="hbar"><span class="nm">🍗 Chicken breast</span><div class="barbg"><div class="bar" style="width:88%"></div></div><span class="vl mono dim">14×</span></div>
+        <div class="hbar"><span class="nm">🥚 Eggs</span><div class="barbg"><div class="bar" style="width:88%"></div></div><span class="vl mono dim">14×</span></div>
+        <div class="hbar"><span class="nm">🥛 Oat milk</span><div class="barbg"><div class="bar" style="width:81%"></div></div><span class="vl mono dim">13×</span></div>
+        <div class="hbar"><span class="nm">🥣 Greek yogurt</span><div class="barbg"><div class="bar" style="width:69%"></div></div><span class="vl mono dim">11×</span></div>
+        <p class="note" style="margin-top:10px;">Chicken is your priciest habit: <b>$157</b> across 14 buys.</p>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <!-- RECEIPTS IN MANY VIEWS (replaces What-If slider) -->
+      <div class="card">
+        <p class="cardh">Browse your receipts — one database, many ways</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px;">
+          <span style="font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:7px;background:#f0eee9;color:#37352f;">▦ Table</span>
+          <span style="font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:7px;background:#eef3fb;color:#3b6ec9;">📅 Calendar</span>
+          <span style="font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:7px;background:#f3eef9;color:#6a4ce0;">🖼 Gallery (photos)</span>
+          <span style="font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:7px;background:#edf7f0;color:#4f9d69;">🗂 Board by store</span>
+        </div>
+        <p class="note">Same receipts, flipped between views live on stage. The calendar shows when you shop; the gallery shows each receipt's photo + cozy-pantry card. Pure Notion, zero code.</p>
+      </div>
+
+      <!-- HEALTH MIX -->
+      <div class="card">
+        <p class="cardh">Health mix this month <span class="note">(needs Health Tier field)</span></p>
+        <div class="tl"><div class="g" style="width:62%"></div><div class="y" style="width:27%"></div><div class="r" style="width:11%"></div></div>
+        <div class="row" style="border:none;"><span class="note">🟩 62% whole · 🟨 27% neutral · 🟥 11% treats</span></div>
+        <p class="note">A one-glance "are my groceries healthy" read. No bank app has this.</p>
+      </div>
+    </div>
+
+    <!-- DRILL DOWN -->
+    <div class="card" style="background:var(--soft); border-style:dashed;">
+      ▸ <b>See every item</b> (221 this period) &nbsp;<span class="note">— the raw tables live here, one tap down, off the main view</span>
+    </div>
+  </div>
+
+  <div class="legend-key">
+    <span><b>Reads in 5s because:</b></span>
+    <span>① one hero number + delta</span>
+    <span>② color only on alerts</span>
+    <span>③ every card ends in a plain sentence</span>
+    <span>④ raw rows hidden</span>
+  </div>
+
+  <!-- ============ HOW IT'S BUILT ============ -->
+  <h2>How each piece is built (max Notion-native)</h2>
+  <table>
+    <tr><th>Card</th><th>Notion mechanism</th><th>Who builds / runs it</th></tr>
+    <tr><td><b>Hero: month spend + delta</b></td><td>Number chart, sum of Total, filtered to this month + comparison to last</td><td><span class="chip a">API once</span> <span class="chip b">bot precomputes delta if native compare falls short</span></td></tr>
+    <tr><td><b>Price Watch line</b> (Shrinkflation)</td><td>Line chart, avg Unit Price, x=Date, one per moved item</td><td><span class="chip a">API once</span> <span class="chip n">auto-updates live</span></td></tr>
+    <tr><td><b>Price Watch sentence</b></td><td>Callout block the bot rewrites with the movers</td><td><span class="chip b">bot</span> <span class="note">(already computes the creep)</span></td></tr>
+    <tr><td><b>Where it went</b> (donut + list)</td><td>Donut chart on Category/Food Group + linked list sorted desc</td><td><span class="chip a">API once</span> <span class="chip n">auto-updates</span></td></tr>
+    <tr><td><b>What you buy most</b></td><td>Bar chart, count by Norm Name, filtered to period</td><td><span class="chip a">API once</span> <span class="chip n">auto-updates</span></td></tr>
+    <tr><td><b>Receipts in many views</b></td><td>Calendar / Gallery / Board / Table views on the same database</td><td><span class="chip a">API or manual once</span> <span class="chip n">then native</span></td></tr>
+    <tr><td><b>Health mix bar</b></td><td>Bar/segment chart by Health Tier</td><td><span class="chip b">bot writes the field</span> <span class="chip a">API chart</span></td></tr>
+    <tr><td><b>Weekly recap</b> (optional)</td><td>Notion <b>"Every week" automation</b> → notification/webhook</td><td><span class="chip n">Notion native, no cron</span></td></tr>
+    <tr><td><b>See every item</b></td><td>The two raw tables, moved into a toggle / Details subpage</td><td><span class="chip m">manual once</span></td></tr>
+  </table>
+  <div class="legend-key">
+    <span><span class="chip n">native</span> Notion runs it</span>
+    <span><span class="chip a">API once</span> our script creates it, then Notion owns it</span>
+    <span><span class="chip m">manual once</span> set up by hand in Notion (API can't make formulas/buttons)</span>
+    <span><span class="chip b">bot</span> the Modal worker writes/updates it</span>
+  </div>
+
+  <!-- ============ TWO FEATURES ============ -->
+  <h2>Your two greenlit features, slotted in</h2>
+  <div class="grid2">
+    <div class="card">
+      <p class="cardh">📈 Shrinkflation Detective</p>
+      <p style="font-size:14px; margin:0 0 8px;">= the <b>Price Watch</b> card + a price-trend line per moved item. Your data already has a clean +26% oat-milk story.</p>
+      <p class="note"><b>Honest caveat:</b> the "X went up Y%" reasoning stays in the bot (Notion formulas can't scan history across rows). The bot already computes it; we just surface it on the dashboard.</p>
+    </div>
+    <div class="card">
+      <p class="cardh">🗂 Receipts in many views</p>
+      <p style="font-size:14px; margin:0 0 8px;">The same database shown as a <b>table, calendar, gallery, and board</b> — flip between them live. The gallery shows each receipt's photo + cozy-pantry card; the calendar shows the days you shop.</p>
+      <p class="note"><b>Why it's the right Notion beat:</b> "one database, many views" is Notion's signature trick. No formulas, no code, grandma-simple. You just switch tabs on stage.</p>
+    </div>
+  </div>
+
+  <!-- ============ BUILD PLAN ============ -->
+  <h2>Build plan — 7 days to June 12</h2>
+
+  <div class="phase">
+    <h3>Phase 1 · Make it readable (the core fix)</h3>
+    <p style="margin:2px 0; font-size:14px;">Move the two raw tables into a "See every item" toggle. Title the 3 charts. Add the hero month-spend Number chart + the category/top-list. Result: a verdict-first dashboard.</p>
+    <p class="dep">Depends on: nothing. <b>Start here.</b> · Mostly <span class="chip a">API once</span> + <span class="chip m">manual layout once</span></p>
+  </div>
+  <div class="phase">
+    <h3>Phase 2 · Shrinkflation Detective <span class="note">∥ parallel with Phase 3</span></h3>
+    <p style="margin:2px 0; font-size:14px;">Generalize the price line beyond oat milk to the items that actually moved. Wire the bot to keep the "Price Watch" callout fresh.</p>
+    <p class="dep">Depends on: Phase 1 layout. Parallel with Phase 3. · <span class="chip a">API</span> + <span class="chip b">bot</span></p>
+  </div>
+  <div class="phase">
+    <h3>Phase 3 · Receipts in many views <span class="note">∥ parallel with Phase 2</span></h3>
+    <p style="margin:2px 0; font-size:14px;">Add Calendar, Gallery (receipt photos + cozy-pantry cards), and Board-by-store views on the existing database. One database, many ways — Notion's signature move, no formulas, no code.</p>
+    <p class="dep">Depends on: nothing. <span class="chip a">API or manual once</span> then <span class="chip n">native</span></p>
+  </div>
+  <div class="phase">
+    <h3>Phase 4 · Food Group + Health Tier <span class="note">(unlocks the good breakdown + health bar)</span></h3>
+    <p style="margin:2px 0; font-size:14px;">Add two Item fields the model already computes; the bot writes them. Turns the 94%-Groceries donut into a real Produce/Meat/Dairy story, and lights up the health mix.</p>
+    <p class="dep">Depends on: a small schema + write change. Charts via <span class="chip a">API</span>. · <span class="chip b">bot</span></p>
+  </div>
+  <div class="phase">
+    <h3>Phase 5 · Lean on Notion automation</h3>
+    <p style="margin:2px 0; font-size:14px;">Replace any recap cron with Notion's native "Every week" automation. Fewer moving parts.</p>
+    <p class="dep">Depends on: Phases 1–2. · <span class="chip n">native</span></p>
+  </div>
+
+  <div class="footer">
+    Sources: research synthesis from finance-app UX (Copilot, Monarch, YNAB), dashboard design (Few, Tufte, the 5-second rule),
+    Notion capability docs (charts /v1/views API, rollups, formulas 2.0, database automations), and top Notion finance templates
+    (Easlo, Thomas Frank, Clarity Mastery). Real data pulled live from the Spendetector Items database, 2026-06-05.
+  </div>
+
+</div>
+</body>
+</html>

@@ -27,8 +27,10 @@ API = "https://api.notion.com/v1"
 # Desired value-axis per chart (by chart name). Everything else (x-axis, filter) is left as is.
 WANT = {
     "Spend by Category": ("sum", "Line Total"),
+    "Spend by Food Group": ("sum", "Line Total"),
     "Spend by Week": ("sum", "Line Total"),
     "Oat Milk price over time": ("average", "Unit Price"),
+    # "Health mix" intentionally omitted: a COUNT of green/yellow/red items is the right metric.
 }
 
 
