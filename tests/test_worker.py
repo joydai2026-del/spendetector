@@ -45,13 +45,23 @@ def test_non_receipt_replies_without_writing(monkeypatch):
     assert n.writes == 0 and len(t.sent) == 1
 
 
-def test_text_message_ignored(monkeypatch):
+def test_text_message_gets_nudge_not_silence(monkeypatch):
     monkeypatch.setenv("TELEGRAM_ALLOWED_CHAT_ID", "99")
     n, t = FakeNotion(), FakeTelegram()
     upd = {"update_id": 5, "message": {"chat": {"id": 99}, "text": "hello"}}
     r = worker.process_update(upd, seen={}, deps=deps(n, t, ok_receipt()))
-    assert r["status"] == "ignored"
+    assert r["status"] == "nudged"
     assert n.writes == 0
+    assert len(t.sent) == 1 and "receipt" in t.sent[0].lower()  # guided, not dead air
+
+
+def test_non_owner_text_is_not_nudged(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_ALLOWED_CHAT_ID", "99")
+    n, t = FakeNotion(), FakeTelegram()
+    upd = {"update_id": 6, "message": {"chat": {"id": 1234}, "text": "hi"}}
+    r = worker.process_update(upd, seen={}, deps=deps(n, t, ok_receipt()))
+    assert r["status"] == "rejected"  # the owner gate fires before the nudge
+    assert t.sent == [] and n.writes == 0
 
 
 def test_price_move_insight_kind_surfaces(monkeypatch):

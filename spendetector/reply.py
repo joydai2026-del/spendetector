@@ -43,6 +43,16 @@ def compose_reply(
     return "\n".join(lines)
 
 
+def greeting_reply() -> str:
+    """Sent when the user texts (or taps Start) instead of sending a photo. The bot is a
+    one-shot receipt reader, not a chatbot, so any non-photo message gets this gentle nudge
+    toward the one thing it does, rather than dead silence (which reads as 'broken')."""
+    return (
+        "\U0001f50d I'm Spendetector. Snap a photo of any receipt and I'll itemize it for you. "
+        "Go ahead, send me one!"
+    )
+
+
 def non_receipt_reply() -> str:
     return (
         "Hmm, I could not read a receipt in that photo. Mind sending it again with the whole "

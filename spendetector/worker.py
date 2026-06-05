@@ -67,7 +67,15 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
 
     file_id = _photo_file_id(message)
     if not file_id:
-        return {"status": "ignored", "reason": "no_photo"}
+        # No receipt photo (a text, /start, sticker, etc.). Instead of dead silence, nudge the
+        # owner toward the one thing the bot does. Only the owner reaches here (gate above), so
+        # this never replies to strangers. Best-effort: a send failure is logged, not fatal.
+        if chat_id is not None:
+            try:
+                telegram.send_message(chat_id, reply.greeting_reply())
+            except Exception as exc:
+                print(f"greeting send failed: {type(exc).__name__}: {exc}")
+        return {"status": "nudged", "reason": "no_photo"}
 
     try:
         image_bytes = telegram.get_file_bytes(file_id)
