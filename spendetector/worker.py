@@ -18,6 +18,7 @@ import hashlib
 from . import extract as extract_mod
 from . import images as images_mod
 from . import notion_io, reply, telegram_io
+from . import recipes as recipes_mod
 from .config import env_optional
 from .insight import compute_insight
 from .report import build_receipt_report
@@ -51,6 +52,7 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
     notion = d.get("notion", notion_io)
     telegram = d.get("telegram", telegram_io)
     images = d.get("images", images_mod)
+    recipes = d.get("recipes", recipes_mod)
 
     update_id = update.get("update_id")
     message = update.get("message") or update.get("edited_message") or {}
@@ -117,8 +119,11 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
         try:
             report = build_receipt_report(receipt, prior)
             haul = images.generate_report_card(receipt, report)
+            meals = recipes.suggest_recipes(receipt.items)
+            menu = images.generate_menu_image(meals) if meals else None
             notion.append_receipt_report(
-                result["receipt_id"], receipt, report, haul, env_optional("NOTION_DASHBOARD_URL")
+                result["receipt_id"], receipt, report, haul,
+                env_optional("NOTION_DASHBOARD_URL"), recipes=meals, menu_image=menu,
             )
         except Exception as exc:
             print(f"report build failed: {type(exc).__name__}: {exc}")

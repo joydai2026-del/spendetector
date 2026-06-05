@@ -262,11 +262,13 @@ def append_receipt_report(
     report,
     image_bytes: bytes | None = None,
     dashboard_url: str | None = None,
+    recipes=None,
+    menu_image: bytes | None = None,
     *,
     client: httpx.Client | None = None,
 ) -> None:
-    """Append the per-receipt report to its own page: image, headline, insights (first), then
-    the items grouped by food type, then a link to the overall dashboard."""
+    """Append the per-receipt report to its own page: image, headline, insights (first), recipes
+    you can cook from the haul, the items grouped by food type, then a link to the dashboard."""
     children: list[dict] = []
 
     # 1. the AI image of the haul, at the top
@@ -288,7 +290,22 @@ def append_receipt_report(
     for line in (report.insights or ["Nothing stood out on this one."]):
         children.append(_blk("bulleted_list_item", line))
 
-    # 4. what you bought, grouped by food type
+    # 4. cook this tonight: recipes from the haul (+ a menu illustration)
+    if recipes:
+        children.append(_blk("heading_2", "\U0001f373 Cook this tonight"))
+        if menu_image:
+            mfid = upload_image(menu_image, "menu.png", client=client)
+            if mfid:
+                children.append({"object": "block", "type": "image",
+                                 "image": {"type": "file_upload", "file_upload": {"id": mfid}}})
+        for rec in recipes:
+            children.append(_blk("heading_3", f"{rec.name}  ·  {rec.minutes} min"))
+            if rec.uses:
+                children.append(_blk("bulleted_list_item", "Uses: " + ", ".join(rec.uses)))
+            if rec.steps:
+                children.append(_blk("paragraph", rec.steps))
+
+    # 5. what you bought, grouped by food type
     bought = f"\U0001f9fa What you bought ({len(receipt.items)} items, ${receipt.total or 0:.2f})"
     children.append(_blk("heading_2", bought))
     for group_name, group_items in report.groups:

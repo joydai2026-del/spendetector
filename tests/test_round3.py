@@ -61,3 +61,36 @@ def test_worker_appends_per_receipt_report_and_links_to_it(monkeypatch):
     assert r["status"] == "ok"
     assert getattr(n, "reports", 0) == 1               # report appended to the receipt page
     assert any("www.notion.so/r" in m for m in t.sent)  # a reply links to THIS receipt's page
+
+
+def test_suggest_recipes_parses_model_output():
+    import json
+
+    from spendetector.recipes import suggest_recipes
+
+    payload = json.dumps({"recipes": [
+        {"name": "Veggie Scramble", "minutes": 15, "uses": ["Eggs", "Spinach"], "steps": "Scramble together."},
+        {"name": "Chicken Bowl", "minutes": 25, "uses": ["Chicken", "Rice"], "steps": "Cook and serve."},
+    ]})
+
+    class _Msg:
+        content = payload
+
+    class _Choice:
+        message = _Msg()
+
+    class _Resp:
+        choices = [_Choice()]
+
+    class _Completions:
+        def create(self, **kw):
+            return _Resp()
+
+    class _Client:
+        chat = type("C", (), {"completions": _Completions()})()
+
+    items = [Item("Eggs", 1, 3.0, 3.0, "Groceries", 1.0, "eggs", "Dairy & Eggs", "green")]
+    recs = suggest_recipes(items, client=_Client())
+    assert len(recs) == 2
+    assert recs[0].name == "Veggie Scramble" and recs[0].minutes == 15
+    assert "Eggs" in recs[0].uses

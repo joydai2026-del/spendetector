@@ -62,6 +62,14 @@ class FakeImages:
     def generate_report_card(self, receipt, report, **kw):
         return None  # no real image in unit tests
 
+    def generate_menu_image(self, recipes, **kw):
+        return None
+
+
+class FakeRecipes:
+    def suggest_recipes(self, items, **kw):
+        return []  # no recipe generation in unit tests
+
 
 def deps(notion, telegram, receipt):
     return {
@@ -69,6 +77,7 @@ def deps(notion, telegram, receipt):
         "telegram": telegram,
         "extract": FakeExtract(receipt),
         "images": FakeImages(),
+        "recipes": FakeRecipes(),
     }
 
 
