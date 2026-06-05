@@ -32,3 +32,27 @@ def test_total_write_failure_does_not_mark_seen(monkeypatch):
     seen: dict = {}
     worker.process_update(photo_update(uid=1), seen=seen, deps=deps(n, t, ok_receipt()))
     assert 1 not in seen  # not marked, so a Modal retry or resend can re-attempt
+
+
+def test_compute_receipt_report_headline_and_lines():
+    from spendetector.insight import compute_receipt_report
+    items = [
+        Item("Oat Milk 64oz", 1, 5.29, 5.29, "Groceries", 1.0, "oat milk"),
+        Item("Atlantic Salmon", 1, 14.99, 14.99, "Groceries", 1.0, "salmon"),
+        Item("Mystery Snack", 1, 2.00, 2.00, "Snacks", 1.0, "mystery snack"),
+    ]
+    rep = compute_receipt_report(items, {"oat milk": (4.49, "2026-03-03")})
+    assert "oat milk" in rep.headline and "18%" in rep.headline and "March" in rep.headline
+    joined = " | ".join(rep.lines)
+    assert "Where it went" in joined          # per-receipt category breakdown
+    assert "Biggest item" in joined and "Salmon" in joined
+    assert "new to your history" in joined    # salmon + snack have no baseline
+
+
+def test_worker_appends_per_receipt_report_and_links_to_it(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_ALLOWED_CHAT_ID", "99")
+    n, t = FakeNotion(), FakeTelegram()
+    r = worker.process_update(photo_update(), seen={}, deps=deps(n, t, ok_receipt()))
+    assert r["status"] == "ok"
+    assert getattr(n, "reports", 0) == 1       # the report was appended to the receipt page
+    assert "www.notion.so/r" in t.sent[0]      # the reply links to THIS receipt's page

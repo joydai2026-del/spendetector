@@ -212,3 +212,55 @@ def write_receipt(
         _patch(f"/pages/{receipt_id}", {"properties": {"Status": _select(status)}}, client)
 
     return {"receipt_id": receipt_id, "url": receipt_page.get("url"), "failed_items": failed}
+
+
+# --- Per-receipt report: the page body the bot links to (items + insights) ---
+def _rich(content: str, url: str | None = None) -> list:
+    text = {"type": "text", "text": {"content": content[:1900]}}
+    if url:
+        text["text"]["link"] = {"url": url}
+    return [text]
+
+
+def _blk(block_type: str, content: str, **props) -> dict:
+    body = {"rich_text": _rich(content)}
+    body.update(props)
+    return {"object": "block", "type": block_type, block_type: body}
+
+
+def _qty_str(qty: float) -> str:
+    return str(int(qty)) if float(qty).is_integer() else f"{qty:g}"
+
+
+def append_receipt_report(
+    page_id: str,
+    receipt: Receipt,
+    report,
+    dashboard_url: str | None = None,
+    *,
+    client: httpx.Client | None = None,
+) -> None:
+    """Append the per-receipt report (what you bought + insights for THIS receipt) to its page."""
+    bought = f"What you bought ({len(receipt.items)} items, ${receipt.total or 0:.2f})"
+    children: list[dict] = [
+        {"object": "block", "type": "divider", "divider": {}},
+        {"object": "block", "type": "callout", "callout": {
+            "rich_text": _rich(report.headline),
+            "icon": {"type": "emoji", "emoji": "\U0001f4a1"},
+            "color": "blue_background",
+        }},
+        _blk("heading_2", bought),
+    ]
+    for it in receipt.items:
+        unit = f"${it.unit_price:.2f}" if it.unit_price is not None else "?"
+        total = f"${it.total:.2f}" if it.total is not None else "?"
+        text = f"{it.name} - {_qty_str(it.qty)} x {unit} = {total}  ·  {it.category}"
+        children.append(_blk("bulleted_list_item", text))
+    children.append(_blk("heading_2", "Insights for this receipt"))
+    for line in (report.lines or ["Nothing stood out on this one."]):
+        children.append(_blk("bulleted_list_item", line))
+    if dashboard_url:
+        children.append({"object": "block", "type": "paragraph", "paragraph": {
+            "rich_text": _rich("See your overall spending dashboard", url=dashboard_url)}})
+    # Notion caps appends at 100 blocks per call; receipts are far smaller.
+    _request("PATCH", f"/blocks/{page_id}/children", {"children": children[:100]}, client)

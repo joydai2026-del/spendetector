@@ -108,10 +108,10 @@ def test_low_confidence_note_appended():
     assert "2 items were unclear" in text
 
 
-def test_price_move_deep_links_to_price_view(monkeypatch):
-    monkeypatch.setenv("NOTION_PRICE_VIEW_URL", "https://www.notion.so/price-view")
-    text = reply.compose_reply(_receipt(), Insight("Heads up.", "price_move"))
-    assert "price-view" in text
+def test_reply_links_to_the_receipt_url_when_given():
+    text = reply.compose_reply(_receipt(), Insight("Heads up.", "price_move"),
+                               receipt_url="https://www.notion.so/r9")
+    assert "www.notion.so/r9" in text
 
 
 def test_error_reply_has_no_em_dash():

@@ -30,6 +30,9 @@ class FakeNotion:
             self.hashes.add(image_hash)
         return {"receipt_id": "r", "url": "https://www.notion.so/r", "failed_items": self._failed}
 
+    def append_receipt_report(self, page_id, receipt, report, dashboard_url=None, **kw):
+        self.reports = getattr(self, "reports", 0) + 1
+
 
 class FakeTelegram:
     def __init__(self):
