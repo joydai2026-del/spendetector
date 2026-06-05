@@ -107,9 +107,11 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
         return {"status": "ok", "insight_kind": insight.kind, "receipt": result}
 
     except Exception as exc:
-        # Never leave the user in silence; this is the demo-day dead-air guard.
+        # Never leave the user in silence; this is the demo-day dead-air guard. Log the cause
+        # (scrubbed by the io layers) so a failure is diagnosable, not invisible.
+        print(f"worker heavy-path error: {type(exc).__name__}: {exc}")
         try:
             telegram.send_message(chat_id, reply.error_reply())
-        except Exception:
-            pass
+        except Exception as send_exc:
+            print(f"soft-fail send also failed: {type(send_exc).__name__}: {send_exc}")
         return {"status": "error", "error": type(exc).__name__}

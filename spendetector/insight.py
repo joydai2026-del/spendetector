@@ -36,7 +36,8 @@ def compute_insight(
     items: list[Item],
     prior_prices: dict[str, tuple[float, str]],
 ) -> Insight:
-    """`prior_prices` maps norm_name -> (prior_unit_price, prior_date_iso) for seen items."""
+    """`prior_prices` maps norm_name -> (baseline_unit_price, baseline_date_iso): the OLDEST
+    recorded price, so the line reads "up X% since <baseline month>" (the price-creep pitch)."""
     best = None  # ((abs_pct, line_total), pct, item, prior_price, prior_date)
     for it in items:
         if it.unit_price is None or it.norm_name not in prior_prices:

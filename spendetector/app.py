@@ -30,7 +30,8 @@ seen = modal.Dict.from_name("spendetector-seen", create_if_missing=True)
 def process_receipt(update: dict) -> None:
     from spendetector import worker
 
-    worker.process_update(update, seen=seen)
+    result = worker.process_update(update, seen=seen)
+    print("process_receipt:", result)
 
 
 @app.function(secrets=[secret])

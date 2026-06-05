@@ -1,5 +1,7 @@
 """Round-2 hardening tests: defensive extraction, Notion payload safety, reply extras."""
 
+import httpx
+
 from spendetector import notion_io, reply
 from spendetector.extract import Item, Receipt, to_receipt
 from spendetector.insight import Insight
@@ -66,7 +68,7 @@ def test_select_strips_commas():
     assert notion_io._select("Trader Joe's, Inc")["select"]["name"] == "Trader Joe's Inc"
 
 
-def test_find_last_price_uses_on_or_before(monkeypatch):
+def test_baseline_price_query_is_oldest_first_and_on_or_before(monkeypatch):
     captured = {}
 
     def fake_post(path, payload, client=None):
@@ -74,9 +76,23 @@ def test_find_last_price_uses_on_or_before(monkeypatch):
         return {"results": []}
 
     monkeypatch.setattr(notion_io, "_post", fake_post)
-    notion_io.find_last_price("oat milk", "2026-06-04")
-    conditions = str(captured["payload"]["filter"]["and"])
-    assert "on_or_before" in conditions
+    notion_io.find_baseline_price("oat milk", "2026-06-04")
+    assert "on_or_before" in str(captured["payload"]["filter"]["and"])
+    # ascending sort = oldest price first = the baseline for the "since March" story
+    assert captured["payload"]["sorts"][0]["direction"] == "ascending"
+
+
+def test_baseline_price_returns_none_on_missing_select_option(monkeypatch):
+    # A brand-new item's Norm Name is not yet a select option, so Notion 400s the filter.
+    # That must be treated as "no prior baseline", never crash the worker.
+    req = httpx.Request("POST", "https://api.notion.com/v1/x")
+    resp = httpx.Response(400, request=req, json={"message": "option not found"})
+
+    def boom(path, payload, client=None):
+        raise httpx.HTTPStatusError("400", request=req, response=resp)
+
+    monkeypatch.setattr(notion_io, "_post", boom)
+    assert notion_io.find_baseline_price("never bought this before", "2026-06-04") is None
 
 
 # --- Reply extras ---

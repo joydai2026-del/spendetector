@@ -98,10 +98,13 @@ def find_receipt_by_image_hash(image_hash: str, *, client: httpx.Client | None =
     return bool(_post(f"/databases/{db}/query", payload, client).get("results"))
 
 
-# --- Prior-price lookup for the insight ---
-def find_last_price(
+# --- Baseline-price lookup for the insight ---
+def find_baseline_price(
     norm_name: str, on_or_before_iso: str, *, client: httpx.Client | None = None
 ) -> tuple[float, str] | None:
+    """The OLDEST recorded price for this item: the baseline for the 'up X% since March' creep
+    story (which is the product's whole pitch). Compares against when you started tracking, not
+    last week, so the number is the real long-run change, not weekly noise."""
     db = env("SPENDETECTOR_ITEMS_DB_ID")
     payload = {
         "filter": {
@@ -109,14 +112,21 @@ def find_last_price(
                 {"property": "Norm Name", "select": {"equals": norm_name}},
                 {"property": "Unit Price", "number": {"is_not_empty": True}},
                 # on_or_before is safe: this receipt's own rows are not written yet, so they
-                # cannot be returned, and a same-day earlier purchase still counts as prior.
+                # cannot be returned.
                 {"property": "Date", "date": {"on_or_before": on_or_before_iso}},
             ]
         },
-        "sorts": [{"property": "Date", "direction": "descending"}],
+        "sorts": [{"property": "Date", "direction": "ascending"}],  # oldest first = the baseline
         "page_size": 1,
     }
-    results = _post(f"/databases/{db}/query", payload, client).get("results", [])
+    try:
+        results = _post(f"/databases/{db}/query", payload, client).get("results", [])
+    except httpx.HTTPStatusError as exc:
+        # Notion returns 400 when the Norm Name select option does not exist yet (a brand-new
+        # item never bought before). That simply means there is no prior baseline -> None.
+        if exc.response.status_code == 400:
+            return None
+        raise
     if not results:
         return None
     props = results[0]["properties"]
@@ -126,9 +136,10 @@ def find_last_price(
 def fetch_prior_prices(
     items: list, on_or_before_iso: str, *, client: httpx.Client | None = None
 ) -> dict[str, tuple[float, str]]:
+    """norm_name -> (baseline_price, baseline_date) for each item that has prior history."""
     out: dict[str, tuple[float, str]] = {}
     for nn in {i.norm_name for i in items if i.norm_name}:
-        found = find_last_price(nn, on_or_before_iso, client=client)
+        found = find_baseline_price(nn, on_or_before_iso, client=client)
         if found:
             out[nn] = found
     return out
