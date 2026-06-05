@@ -24,7 +24,7 @@ Copy `.env.example` to `.env` and fill in the values. Nothing is hardcoded; ever
 
 ### 2. Notion databases + charts
 
-`python -m spendetector.setup_notion` creates the Receipts + Items databases inside the shared page and prints the two database ids (paste them into `.env`). The dashboard charts are then built once in the Notion UI (the Notion API cannot create chart blocks).
+`python -m spendetector.setup_notion` creates the Receipts + Items databases inside the shared page and prints the two database ids (paste them into `.env`). The dashboard charts are created via the Notion MCP `create-view` and configured (value-axis aggregation) via `python scripts/configure_charts.py`, which uses the public `PATCH /v1/views/{id}` API. Fully automated, no manual chart-building.
 
 ### 3. Deploy to Modal
 
