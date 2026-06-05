@@ -232,35 +232,75 @@ def _qty_str(qty: float) -> str:
     return str(int(qty)) if float(qty).is_integer() else f"{qty:g}"
 
 
+def upload_image(image_bytes: bytes, filename: str = "haul.png", *,
+                 client: httpx.Client | None = None) -> str | None:
+    """Upload image bytes to Notion's file store; returns a file_upload id for an image block."""
+    try:
+        created = _post("/file_uploads", {"filename": filename, "content_type": "image/png"}, client)
+        fid = created["id"]
+        own = client is None
+        c = client or httpx.Client(timeout=60.0)
+        try:
+            r = c.post(
+                f"{NOTION_API}/file_uploads/{fid}/send",
+                headers={"Authorization": f"Bearer {env('NOTION_TOKEN')}", "Notion-Version": NOTION_VERSION},
+                files={"file": (filename, image_bytes, "image/png")},
+            )
+            r.raise_for_status()
+        finally:
+            if own:
+                c.close()
+        return fid
+    except Exception as exc:  # best-effort; the report still works without the image
+        print(f"notion image upload failed: {type(exc).__name__}: {exc}")
+        return None
+
+
 def append_receipt_report(
     page_id: str,
     receipt: Receipt,
     report,
+    image_bytes: bytes | None = None,
     dashboard_url: str | None = None,
     *,
     client: httpx.Client | None = None,
 ) -> None:
-    """Append the per-receipt report (what you bought + insights for THIS receipt) to its page."""
-    bought = f"What you bought ({len(receipt.items)} items, ${receipt.total or 0:.2f})"
-    children: list[dict] = [
-        {"object": "block", "type": "divider", "divider": {}},
-        {"object": "block", "type": "callout", "callout": {
-            "rich_text": _rich(report.headline),
-            "icon": {"type": "emoji", "emoji": "\U0001f4a1"},
-            "color": "blue_background",
-        }},
-        _blk("heading_2", bought),
-    ]
-    for it in receipt.items:
-        unit = f"${it.unit_price:.2f}" if it.unit_price is not None else "?"
-        total = f"${it.total:.2f}" if it.total is not None else "?"
-        text = f"{it.name} - {_qty_str(it.qty)} x {unit} = {total}  ·  {it.category}"
-        children.append(_blk("bulleted_list_item", text))
-    children.append(_blk("heading_2", "Insights for this receipt"))
-    for line in (report.lines or ["Nothing stood out on this one."]):
+    """Append the per-receipt report to its own page: image, headline, insights (first), then
+    the items grouped by food type, then a link to the overall dashboard."""
+    children: list[dict] = []
+
+    # 1. the AI image of the haul, at the top
+    if image_bytes:
+        fid = upload_image(image_bytes, client=client)
+        if fid:
+            children.append({"object": "block", "type": "image",
+                             "image": {"type": "file_upload", "file_upload": {"id": fid}}})
+
+    # 2. headline callout
+    children.append({"object": "block", "type": "callout", "callout": {
+        "rich_text": _rich(report.headline),
+        "icon": {"type": "emoji", "emoji": "\U0001f4a1"},
+        "color": "blue_background",
+    }})
+
+    # 3. insights FIRST (the fun part)
+    children.append(_blk("heading_2", "✨ Insights for this receipt"))
+    for line in (report.insights or ["Nothing stood out on this one."]):
         children.append(_blk("bulleted_list_item", line))
+
+    # 4. what you bought, grouped by food type
+    bought = f"\U0001f9fa What you bought ({len(receipt.items)} items, ${receipt.total or 0:.2f})"
+    children.append(_blk("heading_2", bought))
+    for group_name, group_items in report.groups:
+        children.append(_blk("heading_3", group_name))
+        for it in group_items:
+            unit = f"${it.unit_price:.2f}" if it.unit_price is not None else "?"
+            total = f"${it.total:.2f}" if it.total is not None else "?"
+            children.append(_blk("bulleted_list_item", f"{it.name} - {_qty_str(it.qty)} x {unit} = {total}"))
+
     if dashboard_url:
         children.append({"object": "block", "type": "paragraph", "paragraph": {
             "rich_text": _rich("See your overall spending dashboard", url=dashboard_url)}})
-    # Notion caps appends at 100 blocks per call; receipts are far smaller.
+
+    # Notion caps appends at 100 blocks per call; trim defensively for a huge receipt.
     _request("PATCH", f"/blocks/{page_id}/children", {"children": children[:100]}, client)

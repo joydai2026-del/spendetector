@@ -21,6 +21,27 @@ CATEGORIES = [
 ]
 FALLBACK_CATEGORY = "Other"
 
+# Food-type grouping for the per-receipt report ("what you bought", grouped). Distinct from the
+# spending Category above: a supermarket run is all "Groceries" but spans many food groups.
+FOOD_GROUP_ORDER = [
+    "Produce",
+    "Meat & Seafood",
+    "Dairy & Eggs",
+    "Bakery & Grains",
+    "Pantry",
+    "Snacks & Sweets",
+    "Beverages",
+    "Frozen",
+    "Household",
+    "Other",
+]
+FALLBACK_FOOD_GROUP = "Other"
+
+# Health tiers (Nutri-Score / Kroger OptUp style): green = whole/nutritious, yellow = neutral,
+# red = treat/processed. The model tags each item; the report turns it into a health score.
+HEALTH_TIERS = ["green", "yellow", "red"]
+FALLBACK_HEALTH_TIER = "yellow"
+
 # Full GPT-4o (NOT mini: mini's image-token quirk erases the cost savings). Overridable
 # via env, but the default is a full, vision-capable, structured-output snapshot.
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-2024-08-06")

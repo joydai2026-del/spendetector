@@ -14,7 +14,16 @@ import math
 import re
 from dataclasses import dataclass, field
 
-from .config import CATEGORIES, FALLBACK_CATEGORY, OPENAI_MODEL, env
+from .config import (
+    CATEGORIES,
+    FALLBACK_CATEGORY,
+    FALLBACK_FOOD_GROUP,
+    FALLBACK_HEALTH_TIER,
+    FOOD_GROUP_ORDER,
+    HEALTH_TIERS,
+    OPENAI_MODEL,
+    env,
+)
 
 
 class ReceiptParseError(RuntimeError):
@@ -35,13 +44,19 @@ RECEIPT_SCHEMA = {
             "items": {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["name", "qty", "unit_price", "total", "category", "confidence"],
+                "required": [
+                    "name", "qty", "unit_price", "total",
+                    "category", "food_group", "health_tier", "confidence",
+                ],
                 "properties": {
                     "name": {"type": "string"},
                     "qty": {"type": "number"},
                     "unit_price": {"type": ["number", "null"]},
                     "total": {"type": ["number", "null"]},
                     "category": {"type": "string", "enum": CATEGORIES},
+                    "food_group": {"type": "string", "enum": FOOD_GROUP_ORDER},
+                    "health_tier": {"type": "string", "enum": HEALTH_TIERS,
+                                    "description": "green=whole/nutritious, yellow=neutral, red=treat/processed"},
                     "confidence": {"type": "number", "description": "0..1 legibility"},
                 },
             },
@@ -56,6 +71,10 @@ SYSTEM_PROMPT = (
     "You read retail receipts from a photo and return strict JSON. "
     f"Classify each line item into exactly one of these categories: {', '.join(CATEGORIES)}. "
     "If unsure, use Other. "
+    f"Also tag each item with a food_group (one of: {', '.join(FOOD_GROUP_ORDER)}) and a "
+    "health_tier: green for whole/nutritious foods (fresh produce, lean proteins, plain dairy, "
+    "eggs, whole grains, nuts), yellow for neutral or processed staples (bread, pantry, oils), "
+    "red for treats (sweets, soda, chips, candy, desserts). Non-food items are Household + yellow. "
     "NEVER output any card number, account number, or last-4 digits, ever. "
     "If only a line total is printed, set unit_price = total / qty. "
     "Output the purchase date as YYYY-MM-DD. "
@@ -73,6 +92,8 @@ class Item:
     category: str
     confidence: float
     norm_name: str = ""
+    food_group: str = FALLBACK_FOOD_GROUP
+    health_tier: str = FALLBACK_HEALTH_TIER
 
 
 @dataclass
@@ -119,6 +140,10 @@ def _coerce_category(value) -> str:
     return value if value in CATEGORIES else FALLBACK_CATEGORY
 
 
+def _coerce_enum(value, allowed: list[str], fallback: str) -> str:
+    return value if value in allowed else fallback
+
+
 def _to_float(value) -> float | None:
     try:
         result = float(value)
@@ -162,6 +187,8 @@ def to_receipt(data: dict) -> Receipt:
                 category=_coerce_category(raw.get("category", FALLBACK_CATEGORY)),
                 confidence=confidence,
                 norm_name=normalize_name(name),
+                food_group=_coerce_enum(raw.get("food_group"), FOOD_GROUP_ORDER, FALLBACK_FOOD_GROUP),
+                health_tier=_coerce_enum(raw.get("health_tier"), HEALTH_TIERS, FALLBACK_HEALTH_TIER),
             )
         )
     return Receipt(

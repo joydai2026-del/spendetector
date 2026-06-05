@@ -16,7 +16,7 @@ def test_ok_path_writes_once_and_replies(monkeypatch):
     r = worker.process_update(photo_update(), seen={}, deps=deps(n, t, ok_receipt()))
     assert r["status"] == "ok"
     assert n.writes == 1
-    assert len(t.sent) == 1
+    assert len(t.sent) == 2  # a quick ack, then the reply
 
 
 def test_owner_gate_rejects_other_chats(monkeypatch):

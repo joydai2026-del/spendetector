@@ -16,9 +16,11 @@ import datetime as dt
 import hashlib
 
 from . import extract as extract_mod
+from . import images as images_mod
 from . import notion_io, reply, telegram_io
 from .config import env_optional
-from .insight import compute_insight, compute_receipt_report
+from .insight import compute_insight
+from .report import build_receipt_report
 
 _LOW_CONFIDENCE = 0.5
 
@@ -48,6 +50,7 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
     extract = d.get("extract", extract_mod)
     notion = d.get("notion", notion_io)
     telegram = d.get("telegram", telegram_io)
+    images = d.get("images", images_mod)
 
     update_id = update.get("update_id")
     message = update.get("message") or update.get("edited_message") or {}
@@ -102,15 +105,23 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
         if seen is not None:
             seen[update_id] = True  # mark complete only after a successful or partial write
 
-        # Build the per-receipt report and append it to this receipt's own Notion page, so the
-        # user can open "this receipt's report" (items + insights), not just the overall dashboard.
-        report = compute_receipt_report(receipt.items, prior)
+        # Quick ack so the user is not staring during image generation.
         try:
+            telegram.send_message(chat_id, "\U0001f9fe Got your receipt. Drawing up your report...")
+        except Exception:
+            pass
+
+        # Build the rich per-receipt report (insights first + items grouped by food type) plus an
+        # AI image of the haul, appended to this receipt's own page. Best-effort: a failure here
+        # never blocks the reply, and a missing image just drops the image block.
+        try:
+            haul = images.generate_haul_image(receipt.items)
+            report = build_receipt_report(receipt, prior)
             notion.append_receipt_report(
-                result["receipt_id"], receipt, report, env_optional("NOTION_DASHBOARD_URL")
+                result["receipt_id"], receipt, report, haul, env_optional("NOTION_DASHBOARD_URL")
             )
-        except Exception as exc:  # non-fatal: the receipt is logged and the reply still goes out
-            print(f"report append failed: {type(exc).__name__}: {exc}")
+        except Exception as exc:
+            print(f"report build failed: {type(exc).__name__}: {exc}")
 
         low_conf = sum(1 for it in receipt.items if (it.confidence or 1.0) < _LOW_CONFIDENCE)
         telegram.send_message(

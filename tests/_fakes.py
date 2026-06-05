@@ -30,7 +30,7 @@ class FakeNotion:
             self.hashes.add(image_hash)
         return {"receipt_id": "r", "url": "https://www.notion.so/r", "failed_items": self._failed}
 
-    def append_receipt_report(self, page_id, receipt, report, dashboard_url=None, **kw):
+    def append_receipt_report(self, page_id, receipt, report, image_bytes=None, dashboard_url=None, **kw):
         self.reports = getattr(self, "reports", 0) + 1
 
 
@@ -58,8 +58,18 @@ class RaisingExtract:
         raise RuntimeError("boom")
 
 
+class FakeImages:
+    def generate_haul_image(self, items, **kw):
+        return None  # no real image in unit tests
+
+
 def deps(notion, telegram, receipt):
-    return {"notion": notion, "telegram": telegram, "extract": FakeExtract(receipt)}
+    return {
+        "notion": notion,
+        "telegram": telegram,
+        "extract": FakeExtract(receipt),
+        "images": FakeImages(),
+    }
 
 
 def photo_update(uid=1, chat=99):

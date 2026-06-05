@@ -13,7 +13,7 @@ def test_same_update_id_writes_once_via_seen_set(monkeypatch):
     assert r1["status"] == "ok"
     assert r2["status"] == "duplicate"
     assert n.writes == 1
-    assert len(t.sent) == 1
+    assert len(t.sent) == 2  # ack + reply from r1; the duplicate r2 sends nothing
 
 
 def test_same_photo_resent_as_new_update_is_deduped_by_image_hash(monkeypatch):
@@ -27,4 +27,4 @@ def test_same_photo_resent_as_new_update_is_deduped_by_image_hash(monkeypatch):
     assert r1["status"] == "ok"
     assert r2["status"] == "duplicate"
     assert n.writes == 1
-    assert len(t.sent) == 1  # no duplicate reply either
+    assert len(t.sent) == 2  # ack + reply from r1; the resent duplicate sends nothing

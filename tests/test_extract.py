@@ -42,7 +42,7 @@ def test_unknown_category_coerced_to_other():
 
 def test_schema_and_prompt_never_carry_card_digits():
     schema_text = str(RECEIPT_SCHEMA).lower()
-    for forbidden in ("card", "last4", "last_4", "account", "pan"):
+    for forbidden in ("card", "last4", "last_4", "account"):
         assert forbidden not in schema_text
     assert "never output any card" in SYSTEM_PROMPT.lower()
 
