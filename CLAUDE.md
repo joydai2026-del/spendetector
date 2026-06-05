@@ -40,3 +40,6 @@ Full plan with diagrams, dashboard mockups, and the demo script: **`docs/plan.ht
 - **Notion is the star** (this is a Notion demo): the AI writes into a Notion database; Notion builds the dashboard.
 - **Privacy:** never sell data; strip card digits; one-tap export/delete; OpenAI vision with retention/training opt-out.
 - No hardcoding (env vars / config). Cut a branch before the first edit. No em dashes in output.
+
+## Backup
+Backed up to GitHub: **[joydai2026-del/spendetector](https://github.com/joydai2026-del/spendetector)** (private). `scripts/backup.sh` commits any uncommitted changes and pushes the current branch; a Claude Code **SessionEnd hook** runs it automatically, so every session's changes are backed up without anyone remembering to. `.env` and secrets are gitignored and never pushed. Run `bash scripts/backup.sh` anytime to back up on demand.
