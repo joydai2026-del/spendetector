@@ -59,7 +59,7 @@ class RaisingExtract:
 
 
 class FakeImages:
-    def generate_haul_image(self, items, **kw):
+    def generate_report_card(self, receipt, report, **kw):
         return None  # no real image in unit tests
 
 

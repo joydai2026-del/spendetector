@@ -115,8 +115,8 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
         # AI image of the haul, appended to this receipt's own page. Best-effort: a failure here
         # never blocks the reply, and a missing image just drops the image block.
         try:
-            haul = images.generate_haul_image(receipt.items)
             report = build_receipt_report(receipt, prior)
+            haul = images.generate_report_card(receipt, report)
             notion.append_receipt_report(
                 result["receipt_id"], receipt, report, haul, env_optional("NOTION_DASHBOARD_URL")
             )

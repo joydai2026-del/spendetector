@@ -32,6 +32,9 @@ class ReceiptReport:
     headline: str
     insights: list[str]
     groups: list  # list[tuple[str, list[Item]]], ordered by FOOD_GROUP_ORDER
+    grade: str = "C"
+    group_percents: list = None  # [(group_name, pct_of_spend)], biggest first
+    alert: str = ""  # short top price alert for the image, e.g. "eggs up 50% since March"
 
 
 def _month(date_iso: str | None) -> str:
@@ -158,4 +161,14 @@ def build_receipt_report(receipt: Receipt, baselines: dict[str, tuple[float, str
     else:
         headline = f"Logged {len(items)} items for ${total:.2f}. Health score {grade}, no big price jumps."
 
-    return ReceiptReport(headline=headline, insights=insights, groups=groups)
+    group_percents = sorted(
+        ((g, (v / total * 100) if total else 0.0) for g, v in spend_by_group.items()),
+        key=lambda x: -x[1],
+    )
+    alert = ""
+    if ups:
+        pct, it, old, old_date = ups[0]
+        alert = f"{it.norm_name} up {round(pct * 100)}% since {_month(old_date)}"
+
+    return ReceiptReport(headline=headline, insights=insights, groups=groups,
+                         grade=grade, group_percents=group_percents, alert=alert)
