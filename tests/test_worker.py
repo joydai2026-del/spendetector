@@ -42,7 +42,8 @@ def test_non_receipt_replies_without_writing(monkeypatch):
     receipt = ok_receipt(is_receipt=False, items=[])
     r = worker.process_update(photo_update(), seen={}, deps=deps(n, t, receipt))
     assert r["status"] == "not_receipt"
-    assert n.writes == 0 and len(t.sent) == 1
+    assert n.writes == 0 and len(t.sent) == 2
+    assert "processing" in t.sent[0].lower()
 
 
 def test_text_message_gets_nudge_not_silence(monkeypatch):
@@ -78,7 +79,8 @@ def test_parse_failure_sends_soft_fail_not_silence(monkeypatch):
     d = {"notion": n, "telegram": t, "extract": RaisingExtract()}
     r = worker.process_update(photo_update(), seen={}, deps=d)
     assert r["status"] == "error"
-    assert len(t.sent) == 1  # the user got a soft-fail message, not dead air
+    assert len(t.sent) == 2  # processing ack, then soft-fail message
+    assert "processing" in t.sent[0].lower()
 
 
 def test_total_item_write_failure_reports_failure(monkeypatch):
@@ -86,4 +88,5 @@ def test_total_item_write_failure_reports_failure(monkeypatch):
     n, t = FakeNotion(failed_items=1), FakeTelegram()  # the 1-item receipt's only item fails
     r = worker.process_update(photo_update(), seen={}, deps=deps(n, t, ok_receipt()))
     assert r["status"] == "write_failed"
-    assert "could not read" in t.sent[0].lower()
+    assert "processing" in t.sent[0].lower()
+    assert "could not read" in t.sent[-1].lower()

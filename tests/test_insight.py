@@ -44,4 +44,4 @@ def test_biggest_absolute_mover_wins():
 
 def test_no_em_dashes_in_insight_text():
     ins = compute_insight([_item("Oat Milk", 5.29, 5.29, norm="oat milk")], {})
-    assert "—" not in ins.text
+    assert "\u2014" not in ins.text

@@ -8,6 +8,7 @@ __pycache__/
 *.py[cod]
 .venv/
 node_modules/
+notion-worker/dist/
 .DS_Store
 secrets/
 .pytest_cache/

@@ -32,10 +32,11 @@ def test_html_escapes_special_chars_in_store():
 
 
 def test_no_em_dashes_in_static_replies():
-    assert "—" not in reply.non_receipt_reply()
-    assert "—" not in reply.failed_reply()
-    assert "—" not in reply.greeting_reply()
-    assert "—" not in reply.error_reply()
+    em_dash = "\u2014"
+    assert em_dash not in reply.non_receipt_reply()
+    assert em_dash not in reply.failed_reply()
+    assert em_dash not in reply.greeting_reply()
+    assert em_dash not in reply.error_reply()
 
 
 def test_greeting_reply_nudges_toward_a_receipt():

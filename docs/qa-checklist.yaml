@@ -2,7 +2,7 @@ project: spendetector
 created: 2026-06-04
 source_plan: .vault/plans/2026-06-04-spendetector-plan.md
 max_retries: 3
-build_command: "cd /Users/joyd/Spendetector && python -m pytest -q"
+build_command: "cd /Users/joyd/Spendetector && .venv/bin/python -m pytest -q"
 notes: >
   Deterministic definition of done for the Jun 12 Notion demo. Probabilistic surface
   (GPT-4o vision extraction) is covered here at the deterministic floor only; the
@@ -23,7 +23,7 @@ checks:
   - id: A1
     name: "Test suite passes"
     type: automated
-    command: "cd /Users/joyd/Spendetector && python -m pytest -q"
+    command: "cd /Users/joyd/Spendetector && .venv/bin/python -m pytest -q"
     expected: "0"
     comparison_mode: exit_code
     side_effects: false
@@ -93,7 +93,7 @@ checks:
   - id: B5
     name: "parse_receipt validates against saved REAL-receipt fixtures (schema + enum + no card digits)"
     type: automated
-    command: "cd /Users/joyd/Spendetector && python -m pytest -q tests/test_extract.py"
+    command: "cd /Users/joyd/Spendetector && .venv/bin/python -m pytest -q tests/test_extract.py"
     expected: "0"
     comparison_mode: exit_code
     side_effects: false
@@ -104,7 +104,7 @@ checks:
   - id: B6
     name: "Item-name normalizer collapses variants to one key"
     type: automated
-    command: "cd /Users/joyd/Spendetector && python -m pytest -q tests/test_normalize.py"
+    command: "cd /Users/joyd/Spendetector && .venv/bin/python -m pytest -q tests/test_normalize.py"
     expected: "0"
     comparison_mode: exit_code
     side_effects: false
@@ -113,10 +113,10 @@ checks:
     blocked_reason: null
 
   - id: B7
-    name: "normalize_name unit truth: 'Oat Milk 64oz' and 'OATMILK' both map to 'oat milk'"
+    name: "normalize_name unit truth: printed spacing must match the hero item's seeded rows"
     type: code-audit
     files: [spendetector/extract.py, tests/test_normalize.py]
-    criteria: "normalize_name lowercases, strips size/qty tokens (oz/ct/pk/lb/g/ml/l/pack), strips non-alphanumerics, and keeps the first significant words so 'Oat Milk 64oz' and 'OATMILK' both produce 'oat milk'. A test asserts this exact case plus empty/all-digits edge cases."
+    criteria: "normalize_name lowercases, strips size/qty tokens (oz/ct/pk/lb/g/ml/l/pack), strips non-alphanumerics, and keeps the first significant words so 'Oat Milk 64oz', 'OAT MILK', and 'Oat Milk' produce 'oat milk'. It does not merge unspaced variants like 'OATMILK', so the hero item's Norm Name must be verified against the seeded rows."
     status: pending
     retries: 0
     blocked_reason: null
@@ -136,7 +136,7 @@ checks:
   - id: C2
     name: "Week/Month are pre-bucketed select strings written at write time"
     type: automated
-    command: "cd /Users/joyd/Spendetector && python -m pytest -q tests/test_buckets.py"
+    command: "cd /Users/joyd/Spendetector && .venv/bin/python -m pytest -q tests/test_buckets.py"
     expected: "0"
     comparison_mode: exit_code
     side_effects: false
@@ -156,7 +156,7 @@ checks:
   - id: C4
     name: "write_receipt writes a real row to a throwaway Notion DB (integration)"
     type: automated
-    command: "cd /Users/joyd/Spendetector && python -m pytest -q -m integration tests/test_notion_io.py"
+    command: "cd /Users/joyd/Spendetector && .venv/bin/python -m pytest -q -m integration tests/test_notion_io.py"
     expected: "0"
     comparison_mode: exit_code
     side_effects: true
@@ -188,7 +188,7 @@ checks:
   - id: D2
     name: "Idempotency: duplicate update_id writes exactly one receipt"
     type: automated
-    command: "cd /Users/joyd/Spendetector && python -m pytest -q tests/test_idempotency.py"
+    command: "cd /Users/joyd/Spendetector && .venv/bin/python -m pytest -q tests/test_idempotency.py"
     expected: "0"
     comparison_mode: exit_code
     side_effects: false
@@ -197,10 +197,10 @@ checks:
     blocked_reason: null
 
   - id: D3
-    name: "Two-layer idempotency present (modal.Dict seen-set + DB guard by update_id)"
+    name: "Two-layer idempotency present (modal.Dict seen-set + DB guard by image hash)"
     type: code-audit
     files: [spendetector/worker.py, spendetector/notion_io.py]
-    criteria: "Worker checks a modal.Dict seen-set on update_id at the top, AND a Receipts-DB query by Telegram Update ID before pages.create. Either match short-circuits with no duplicate row and no duplicate reply."
+    criteria: "Worker checks a modal.Dict seen-set on update_id at the top, AND a Receipts-DB query by Image Hash before pages.create. Either match short-circuits with no duplicate row and no duplicate reply."
     status: pending
     retries: 0
     blocked_reason: null
@@ -229,7 +229,7 @@ checks:
   - id: E1
     name: "Insight ladder + cold-start path unit-tested"
     type: automated
-    command: "cd /Users/joyd/Spendetector && python -m pytest -q tests/test_insight.py"
+    command: "cd /Users/joyd/Spendetector && .venv/bin/python -m pytest -q tests/test_insight.py"
     expected: "0"
     comparison_mode: exit_code
     side_effects: false
@@ -289,10 +289,10 @@ checks:
   # G. Bot copy (one-shot UX)
   # ---------------------------------------------------------------------------
   - id: G1
-    name: "Bot is one-shot: confirmation + ONE insight + tap-through link"
+    name: "Bot is focused: processing ack, then final confirmation + ONE insight + tap-through link"
     type: code-audit
     files: [spendetector/worker.py, spendetector/insight.py]
-    criteria: "Per receipt the bot sends exactly one reply: a short confirmation (store, total, item count), one insight line, and a plain-language tap-through link. No conversational free-text Q&A path exists."
+    criteria: "Per receipt the bot may send one short processing ack to avoid demo dead air, then one final reply with store, total, item count, one insight line, and a plain-language tap-through link. No conversational free-text Q&A path exists."
     status: pending
     retries: 0
     blocked_reason: null
@@ -327,7 +327,7 @@ checks:
     criteria: "The Notion Spendetector page is assembled in the order locked in plan section 6.1, with the price-creep hero callout at the top and the raw item table collapsed below the fold. Verified by opening the page (manual)."
     status: pending
     retries: 0
-    blocked_reason: "manual Notion UI build (API cannot create chart blocks)"
+    blocked_reason: "needs live Notion page layout verification; chart views can be created/configured by API, but the page must read clearly as a product"
 
   - id: H2
     name: "Per-item price chart renders a real line on the hero-item filtered view"
@@ -336,7 +336,7 @@ checks:
     criteria: "A filtered Items view (Norm Name == hero item) drives a line chart of Unit Price over Date that renders real points from JJ's seeded receipts. Verified by opening on a phone (manual)."
     status: pending
     retries: 0
-    blocked_reason: "needs seeded real receipts + manual chart build"
+    blocked_reason: "needs seeded real receipts + live Notion view verification"
 
   - id: H3
     name: "Budget progress bar is NOT on the demo dashboard"

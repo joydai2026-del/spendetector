@@ -90,6 +90,12 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
         except Exception:
             pass  # best-effort; the seen-set still covers same-update redelivery
 
+        # Fast visible ack before GPT/Notion work, so Telegram never feels silent during parsing.
+        try:
+            telegram.send_message(chat_id, "\U0001f9fe Got your receipt. Processing it now...")
+        except Exception:
+            pass
+
         receipt = extract.parse_receipt(image_bytes)
 
         if not receipt.is_receipt:
@@ -114,12 +120,6 @@ def process_update(update: dict, *, seen=None, deps: dict | None = None) -> dict
 
         if seen is not None:
             seen[update_id] = True  # mark complete only after a successful or partial write
-
-        # Quick ack so the user is not staring during image generation.
-        try:
-            telegram.send_message(chat_id, "\U0001f9fe Got your receipt. Drawing up your report...")
-        except Exception:
-            pass
 
         # Build the rich per-receipt report (insights first + items grouped by food type) plus an
         # AI image of the haul, appended to this receipt's own page. Best-effort: a failure here

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spendetector — Dashboard Redesign</title>
+<title>Spendetector - Dashboard Redesign</title>
 <style>
   :root{
     --ink:#37352f; --muted:#787066; --line:#e9e7e2; --bg:#ffffff; --soft:#f7f6f3;
@@ -115,16 +115,16 @@
   <!-- ============ BEFORE ============ -->
   <h2>What the dashboard shows now</h2>
   <div class="before">
-    <div class="blk"><span class="tag">TABLE</span> Spendetector Receipts <span class="annot x">— raw rows</span></div>
+    <div class="blk"><span class="tag">TABLE</span> Spendetector Receipts <span class="annot x">- raw rows</span></div>
     <div class="blk"><span class="tag">TABLE</span> Spendetector Items (221 rows) <span class="annot x">← the "wall of rows". This is why it feels unreadable.</span></div>
-    <div class="blk"><span class="tag">CHART</span> <i>Untitled</i> <span class="annot x">— a donut, but no title + 94% is just "Groceries"</span></div>
-    <div class="blk"><span class="tag">CHART</span> <i>Untitled</i> <span class="annot x">— weekly bars, no label, no context</span></div>
-    <div class="blk"><span class="tag">CHART</span> <i>Untitled</i> <span class="annot x">— one hard-coded "oat milk" line</span></div>
+    <div class="blk"><span class="tag">CHART</span> <i>Untitled</i> <span class="annot x">- a donut, but no title + 94% is just "Groceries"</span></div>
+    <div class="blk"><span class="tag">CHART</span> <i>Untitled</i> <span class="annot x">- weekly bars, no label, no context</span></div>
+    <div class="blk"><span class="tag">CHART</span> <i>Untitled</i> <span class="annot x">- one hard-coded "oat milk" line</span></div>
   </div>
   <p class="note" style="margin-top:10px;">No hero number. No "vs last month." No sentence telling you what any of it means. Two raw tables on top. <b>That is the whole problem.</b></p>
 
   <!-- ============ AFTER ============ -->
-  <h2>The redesign — verdict first, detail last</h2>
+  <h2>The redesign: verdict first, detail last</h2>
   <div class="dash">
 
     <!-- HERO -->
@@ -141,11 +141,11 @@
 
     <!-- PRICE WATCH (Shrinkflation Detective) -->
     <div class="card watch">
-      <div class="h">⚠️ Price Watch — the thing your bank can't see</div>
+      <div class="h">⚠️ Price Watch: the thing your bank can't see</div>
       <div class="row"><span><b>Oat milk</b> &nbsp;<span class="note">$4.49 → $5.65 since March</span></span>
         <span class="up-t mono">+26%</span></div>
-      <div class="row"><span><b>Eggs (dozen)</b> &nbsp;<span class="note">$3.99 → $4.79</span></span>
-        <span class="up-t mono">+20%</span></div>
+      <div class="row"><span><b>Eggs (dozen)</b> &nbsp;<span class="note">$3.99 → $6.16</span></span>
+        <span class="up-t mono">+54%</span></div>
       <div style="margin-top:12px;">
         <div class="note" style="margin-bottom:4px;">Oat milk, every purchase since March:</div>
         <!-- sparkline of the REAL 13-point oat-milk series 4.49 -> 5.65 -->
@@ -187,7 +187,7 @@
     <div class="grid2">
       <!-- RECEIPTS IN MANY VIEWS (replaces What-If slider) -->
       <div class="card">
-        <p class="cardh">Browse your receipts — one database, many ways</p>
+        <p class="cardh">Browse your receipts: one database, many ways</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 10px;">
           <span style="font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:7px;background:#f0eee9;color:#37352f;">▦ Table</span>
           <span style="font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:7px;background:#eef3fb;color:#3b6ec9;">📅 Calendar</span>
@@ -208,7 +208,7 @@
 
     <!-- DRILL DOWN -->
     <div class="card" style="background:var(--soft); border-style:dashed;">
-      ▸ <b>See every item</b> (221 this period) &nbsp;<span class="note">— the raw tables live here, one tap down, off the main view</span>
+      ▸ <b>See every item</b> (221 this period) &nbsp;<span class="note">- the raw tables live here, one tap down, off the main view</span>
     </div>
   </div>
 
@@ -251,13 +251,13 @@
     </div>
     <div class="card">
       <p class="cardh">🗂 Receipts in many views</p>
-      <p style="font-size:14px; margin:0 0 8px;">The same database shown as a <b>table, calendar, gallery, and board</b> — flip between them live. The gallery shows each receipt's photo + cozy-pantry card; the calendar shows the days you shop.</p>
+        <p style="font-size:14px; margin:0 0 8px;">The same database shown as a <b>table, calendar, gallery, and board</b>. Flip between them live. The gallery shows each receipt's photo + cozy-pantry card; the calendar shows the days you shop.</p>
       <p class="note"><b>Why it's the right Notion beat:</b> "one database, many views" is Notion's signature trick. No formulas, no code, grandma-simple. You just switch tabs on stage.</p>
     </div>
   </div>
 
   <!-- ============ BUILD PLAN ============ -->
-  <h2>Build plan — 7 days to June 12</h2>
+  <h2>Build plan: 7 days to June 12</h2>
 
   <div class="phase">
     <h3>Phase 1 · Make it readable (the core fix)</h3>
@@ -271,7 +271,7 @@
   </div>
   <div class="phase">
     <h3>Phase 3 · Receipts in many views <span class="note">∥ parallel with Phase 2</span></h3>
-    <p style="margin:2px 0; font-size:14px;">Add Calendar, Gallery (receipt photos + cozy-pantry cards), and Board-by-store views on the existing database. One database, many ways — Notion's signature move, no formulas, no code.</p>
+    <p style="margin:2px 0; font-size:14px;">Add Calendar, Gallery (receipt photos + cozy-pantry cards), and Board-by-store views on the existing database. One database, many ways. Notion's signature move, no formulas, no code.</p>
     <p class="dep">Depends on: nothing. <span class="chip a">API or manual once</span> then <span class="chip n">native</span></p>
   </div>
   <div class="phase">

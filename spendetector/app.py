@@ -14,6 +14,7 @@ import modal
 from fastapi import Header
 from fastapi.responses import JSONResponse
 
+from spendetector.notion_worker import verify_notion_secret
 from spendetector.webhook import verify_secret
 
 image = (
@@ -43,4 +44,24 @@ def telegram_webhook(
     if not verify_secret(x_telegram_bot_api_secret_token):
         return JSONResponse({"ok": False}, status_code=403)
     process_receipt.spawn(update)
+    return {"ok": True}
+
+
+@app.function(secrets=[secret], timeout=60, retries=1)
+def process_notion_watch(payload: dict) -> None:
+    from spendetector import notion_worker
+
+    result = notion_worker.handle_watch_item(payload)
+    print("process_notion_watch:", result)
+
+
+@app.function(secrets=[secret])
+@modal.fastapi_endpoint(method="POST")
+def notion_watch_webhook(
+    payload: dict,
+    x_spendetector_notion_secret: str | None = Header(default=None),
+) -> dict:
+    if not verify_notion_secret(x_spendetector_notion_secret):
+        return JSONResponse({"ok": False}, status_code=403)
+    process_notion_watch.spawn(payload)
     return {"ok": True}

@@ -115,4 +115,4 @@ def test_reply_links_to_the_receipt_url_when_given():
 
 
 def test_error_reply_has_no_em_dash():
-    assert "—" not in reply.error_reply()
+    assert "\u2014" not in reply.error_reply()

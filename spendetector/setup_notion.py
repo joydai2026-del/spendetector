@@ -2,10 +2,11 @@
 
 Run after creating the Notion integration and sharing the page with it:
 
-    SPENDETECTOR_PARENT_PAGE_ID=<page-id> NOTION_TOKEN=<token> python -m spendetector.setup_notion
+    SPENDETECTOR_PARENT_PAGE_ID=<page-id> NOTION_TOKEN=<token> .venv/bin/python -m spendetector.setup_notion
 
-It prints the two database ids to paste into .env. The dashboard charts are then built once in
-the Notion UI (the Notion API cannot create chart blocks).
+It prints the two database ids to paste into .env. Dashboard chart views are created once through
+Notion tooling and then configured by scripts/configure_charts.py. Page layout remains a Notion
+presentation task: arrange the views into a readable demo dashboard.
 """
 
 from __future__ import annotations

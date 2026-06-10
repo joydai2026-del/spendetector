@@ -12,7 +12,7 @@ import time
 
 import httpx
 
-from .config import env
+from .config import env, env_optional
 from .extract import Receipt
 
 NOTION_API = "https://api.notion.com/v1"
@@ -143,6 +143,50 @@ def fetch_prior_prices(
         if found:
             out[nn] = found
     return out
+
+
+def find_price_series(norm_name: str, *, client: httpx.Client | None = None) -> list[dict]:
+    """Return all dated unit prices for a normalized item, oldest first."""
+    db = env("SPENDETECTOR_ITEMS_DB_ID")
+    payload = {
+        "filter": {
+            "and": [
+                {"property": "Norm Name", "select": {"equals": norm_name}},
+                {"property": "Unit Price", "number": {"is_not_empty": True}},
+            ]
+        },
+        "sorts": [{"property": "Date", "direction": "ascending"}],
+        "page_size": 100,
+    }
+    rows = _post(f"/databases/{db}/query", payload, client).get("results", [])
+    out = []
+    for row in rows:
+        props = row.get("properties", {})
+        price = props.get("Unit Price", {}).get("number")
+        date = (props.get("Date", {}).get("date") or {}).get("start")
+        item = "".join(t.get("plain_text", "") for t in props.get("Item", {}).get("title", []))
+        if price is not None and date:
+            out.append({"date": date, "unit_price": price, "item": item, "url": row.get("url")})
+    return out
+
+
+def write_watchlist_summary(summary: dict, *, client: httpx.Client | None = None) -> dict | None:
+    """Write one Watchlist row if SPENDETECTOR_WATCHLIST_DB_ID is configured."""
+    db = env_optional("SPENDETECTOR_WATCHLIST_DB_ID")
+    if not db:
+        return None
+    props = {
+        "Item": {"title": [{"text": {"content": summary["label"][:2000]}}]},
+        "Norm Name": _select(summary["norm_name"]),
+        "Status": _select(summary.get("status", "Watching")),
+        "First Seen": {"date": {"start": summary["first_date"]}},
+        "Latest Seen": {"date": {"start": summary["latest_date"]}},
+        "Notes": _rich_text(summary.get("notes", "")),
+    }
+    _set_number(props, "Baseline Price", summary.get("baseline_price"))
+    _set_number(props, "Latest Price", summary.get("latest_price"))
+    _set_number(props, "Change %", summary.get("change_pct"))
+    return _post("/pages", {"parent": {"database_id": db}, "properties": props}, client)
 
 
 def _item_props(

@@ -24,7 +24,7 @@ Copy `.env.example` to `.env` and fill in the values. Nothing is hardcoded; ever
 
 ### 2. Notion databases + charts
 
-`python -m spendetector.setup_notion` creates the Receipts + Items databases inside the shared page and prints the two database ids (paste them into `.env`). The dashboard charts are created via the Notion MCP `create-view` and configured (value-axis aggregation) via `python scripts/configure_charts.py`, which uses the public `PATCH /v1/views/{id}` API. Fully automated, no manual chart-building.
+`.venv/bin/python -m spendetector.setup_notion` creates the Receipts + Items databases inside the shared page and prints the two database ids (paste them into `.env`). The dashboard chart views are created once through Notion tooling and configured via `.venv/bin/python scripts/configure_charts.py`, which uses the public `PATCH /v1/views/{id}` API to set the value-axis aggregation. The chart math is automated; the page layout still needs a human-readable Notion arrangement.
 
 ### 3. Deploy to Modal
 
@@ -40,12 +40,18 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 ## Test
 
 ```bash
-pip install -e ".[dev]"
-python -m pytest -q          # unit tests (no credentials needed)
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/python -m pytest -q          # unit tests (no credentials needed)
 ruff check spendetector
 ```
 
 The integration and live end-to-end checks (real bot, real receipt, real Notion) are the gate that actually matters; see `docs/qa-checklist.yaml` (sections C, I).
+
+## Notion-triggered worker
+
+Future version: a Notion button or database automation can call the Modal `notion_watch_webhook` endpoint with a `norm_name` payload. The worker verifies `X-Spendetector-Notion-Secret`, computes first and latest prices from the Items DB, then writes a row to an optional Watchlist DB (`SPENDETECTOR_WATCHLIST_DB_ID`).
+
+Do not place this on the production dashboard until the Notion button is actually configured and tested.
 
 ## Privacy
 
