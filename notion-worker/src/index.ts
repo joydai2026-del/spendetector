@@ -190,6 +190,10 @@ function errorReply(): string {
   return "Something hiccuped reading that receipt. Mind sending it again?";
 }
 
+function serviceUnavailableReply(): string {
+  return "My receipt reader is temporarily unavailable on my end, not your photo, nothing you did wrong. Please try again in a few minutes.";
+}
+
 function composeReply(receipt: Receipt, insight: Insight, receiptUrl: string | undefined, lowConf: number): string {
   const store = receipt.store || "Receipt";
   const head = receipt.total === null
@@ -339,7 +343,20 @@ async function openAiJson(payload: Record<string, unknown>): Promise<any> {
     body: JSON.stringify(payload),
   });
   if (!response.ok) {
-    throw new Error(`OpenAI chat failed (${response.status})`);
+    // Surface the REAL reason (insufficient_quota vs rate_limit_exceeded vs 5xx) so the
+    // run logs are self-explanatory, and tag service errors so the caller can tell an
+    // outage on our side from a genuinely unreadable photo.
+    let detail = "";
+    try {
+      const body: any = await response.json();
+      detail = body?.error?.code || body?.error?.type || body?.error?.message || "";
+    } catch {
+      // non-JSON body; the status code alone has to carry the message
+    }
+    const err: any = new Error(`OpenAI chat failed (${response.status})${detail ? `: ${detail}` : ""}`);
+    err.status = response.status;
+    err.serviceError = response.status === 429 || response.status >= 500;
+    throw err;
   }
   return response.json();
 }
@@ -993,8 +1010,11 @@ async function handleTelegramUpdate(update: any, notion: any): Promise<Record<st
     return { status: "ok", insight_kind: insight.kind, receipt: result };
   } catch (error: any) {
     console.log(`worker heavy-path error: ${error?.name || "Error"}: ${error?.message || error}`);
+    // A 429/5xx from OpenAI (or any tagged service error) is on our side, not the user's
+    // photo. Do not tell them to resend a perfectly good receipt.
+    const reply = error?.serviceError ? serviceUnavailableReply() : errorReply();
     try {
-      await sendMessage(chatId, errorReply());
+      await sendMessage(chatId, reply);
     } catch (sendError: any) {
       console.log(`soft-fail send also failed: ${sendError?.name || "Error"}: ${sendError?.message || sendError}`);
     }

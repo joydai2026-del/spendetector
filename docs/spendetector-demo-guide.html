@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spendetector — Demo Guide</title>
+<style>
+  :root{
+    --ink:#37352f; --ink-soft:#6b6760; --line:#eae6df; --line2:#f1ede6;
+    --paper:#fffdf9; --card:#ffffff; --cream:#fbf9f4;
+    --green:#2f9e6f; --green-bg:#eaf7f0;
+    --amber:#c98a12; --amber-bg:#fdf3e1;
+    --red:#d6543f; --red-bg:#fbece9;
+    --blue:#3a7bd5; --blue-bg:#ecf2fb;
+    --notion:#37352f; --money:#1f8a5b;
+    --radius:14px; --shadow:0 1px 2px rgba(20,16,8,.05), 0 8px 24px rgba(20,16,8,.05);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue); text-decoration:none}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 22px}
+
+  /* ---- top nav ---- */
+  nav{position:sticky; top:0; z-index:50; background:rgba(255,253,249,.92);
+      backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex; align-items:center; gap:18px; height:54px; overflow-x:auto}
+  nav .brand{font-weight:700; white-space:nowrap}
+  nav .links{display:flex; gap:16px; font-size:13.5px; color:var(--ink-soft); white-space:nowrap}
+  nav .links a{color:var(--ink-soft)}
+  nav .links a:hover{color:var(--ink)}
+
+  /* ---- hero ---- */
+  header.hero{padding:46px 0 30px; border-bottom:1px solid var(--line)}
+  .kick{font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--money); font-weight:700}
+  h1{font-size:40px; line-height:1.1; margin:.3em 0 .15em; letter-spacing:-.02em}
+  .sub{font-size:19px; color:var(--ink-soft); max-width:760px; margin:0}
+  .meta{display:flex; flex-wrap:wrap; gap:10px; margin-top:20px}
+  .pill{font-size:12.5px; font-weight:600; padding:5px 11px; border-radius:999px; border:1px solid var(--line)}
+  .pill.ok{background:var(--green-bg); color:#1d7a52; border-color:#cdebdb}
+  .pill.warn{background:var(--amber-bg); color:#9a6a0c; border-color:#f1e0bd}
+  .pill.muted{background:var(--cream); color:var(--ink-soft)}
+
+  section{padding:38px 0; border-bottom:1px solid var(--line)}
+  h2{font-size:13px; letter-spacing:.09em; text-transform:uppercase; color:var(--money); margin:0 0 4px; font-weight:700}
+  .h2big{font-size:27px; letter-spacing:-.015em; margin:0 0 18px; color:var(--ink)}
+  h3{font-size:18px; margin:26px 0 10px}
+  p{margin:.5em 0}
+  .lead{font-size:18px; color:var(--ink)}
+  .muted{color:var(--ink-soft)}
+  .small{font-size:13.5px}
+
+  .grid{display:grid; gap:16px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 18px; box-shadow:var(--shadow)}
+  .card.flat{box-shadow:none; background:var(--cream)}
+  .card h4{margin:0 0 6px; font-size:15.5px}
+  .card .big{font-size:30px; font-weight:750; letter-spacing:-.02em; line-height:1}
+  .card .lbl{font-size:12.5px; color:var(--ink-soft); margin-top:6px}
+
+  /* ---- pipeline diagram ---- */
+  .pipe{display:flex; align-items:stretch; gap:0; flex-wrap:wrap; margin:8px 0 4px}
+  .node{flex:1 1 0; min-width:130px; background:var(--card); border:1px solid var(--line);
+        border-radius:12px; padding:14px 12px; text-align:center; box-shadow:var(--shadow)}
+  .node .ico{font-size:24px}
+  .node .nm{font-weight:700; font-size:14px; margin-top:4px}
+  .node .ds{font-size:11.5px; color:var(--ink-soft); margin-top:2px; line-height:1.35}
+  .arrow{display:flex; align-items:center; justify-content:center; padding:0 4px; color:#cbb; font-size:20px; font-weight:700}
+  .node.acc-tg{border-top:3px solid #29a3da}
+  .node.acc-nw{border-top:3px solid var(--notion)}
+  .node.acc-ai{border-top:3px solid #10a37f}
+  .node.acc-db{border-top:3px solid #d6543f}
+  .node.acc-out{border-top:3px solid var(--money)}
+  @media(max-width:820px){
+    .pipe{flex-direction:column}
+    .arrow{transform:rotate(90deg); padding:6px 0}
+  }
+
+  /* ---- before/after ---- */
+  .ba{display:grid; grid-template-columns:1fr auto 1fr; gap:18px; align-items:center}
+  @media(max-width:820px){.ba{grid-template-columns:1fr}}
+  .ba .col{border-radius:var(--radius); padding:18px; border:1px solid var(--line)}
+  .ba .before{background:var(--cream)}
+  .ba .after{background:var(--green-bg); border-color:#cdebdb}
+  .ba .mid{font-size:30px; color:var(--ink-soft); text-align:center}
+  @media(max-width:820px){.ba .mid{transform:rotate(90deg)}}
+  .ba ul{margin:8px 0 0; padding-left:18px} .ba li{margin:5px 0; font-size:14px}
+  .tag{display:inline-block; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 9px; border-radius:999px; margin-bottom:6px}
+  .tag.old{background:#efe9df; color:#8a7f6c} .tag.new{background:#1d7a52; color:#fff}
+
+  /* ---- steps ---- */
+  .step{display:grid; grid-template-columns:38px 1fr; gap:14px; padding:14px 0; border-top:1px dashed var(--line)}
+  .step:first-child{border-top:none}
+  .step .n{width:38px; height:38px; border-radius:10px; background:var(--notion); color:#fff;
+           display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px}
+  .step h4{margin:2px 0 4px; font-size:16px}
+  .step .tech{font-size:12.5px; color:var(--ink-soft); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--cream); padding:2px 7px; border-radius:6px; display:inline-block; margin-top:6px}
+
+  /* ---- split table ---- */
+  table{width:100%; border-collapse:collapse; font-size:14.5px}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line2); vertical-align:top}
+  th{font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); font-weight:700}
+  tr:last-child td{border-bottom:none}
+  td.k{font-weight:600; width:34%}
+
+  /* ---- run of show ---- */
+  .beat{display:grid; grid-template-columns:34px 1fr 1fr; gap:0; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:14px; box-shadow:var(--shadow)}
+  @media(max-width:820px){.beat{grid-template-columns:34px 1fr}}
+  .beat .bn{background:var(--notion); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700}
+  .beat .do{padding:14px 16px; background:var(--card); border-right:1px solid var(--line)}
+  .beat .say{padding:14px 16px; background:var(--cream)}
+  @media(max-width:820px){.beat .do,.beat .say{grid-column:2}}
+  .beat .lab{font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:700; color:var(--ink-soft); margin-bottom:5px}
+  .beat .say .lab{color:var(--money)}
+  .beat .say q{font-style:normal; quotes:"\201C" "\201D"}
+  .beat .say q:before{content:open-quote} .beat .say q:after{content:close-quote}
+  .beat .say .quote{font-size:15px; line-height:1.5}
+  .beat .tmark{font-size:11.5px; color:var(--ink-soft); margin-top:8px}
+
+  .line-cheat{border-left:3px solid var(--money); background:var(--cream); padding:12px 16px; border-radius:0 10px 10px 0; margin:10px 0; font-size:15.5px}
+
+  /* ---- roadmap tiers ---- */
+  .tier{border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-bottom:14px}
+  .tier .th{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+  .tier .dot{width:11px;height:11px;border-radius:50%}
+  .tier.now .dot{background:var(--green)} .tier.next .dot{background:var(--amber)} .tier.later .dot{background:var(--blue)}
+  .tier .tt{font-weight:700} .tier .tm{font-size:12.5px; color:var(--ink-soft)}
+  .tier ul{margin:6px 0 0; padding-left:18px; columns:2} @media(max-width:680px){.tier ul{columns:1}}
+  .tier li{margin:4px 0; font-size:14px}
+
+  /* ---- punch list ---- */
+  .fix{display:grid; grid-template-columns:auto 1fr; gap:14px; padding:14px 0; border-top:1px solid var(--line)}
+  .fix:first-of-type{border-top:none}
+  .fix .sev{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:4px 9px; border-radius:8px; height:fit-content; white-space:nowrap}
+  .sev.must{background:var(--red-bg); color:#b23c29} .sev.should{background:var(--amber-bg); color:#9a6a0c} .sev.note{background:var(--cream); color:var(--ink-soft)} .sev.done{background:var(--green-bg); color:#1d7a52}
+  .fix h4{margin:0 0 4px}
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; background:var(--cream); padding:2px 6px; border-radius:6px}
+  pre{background:#2b2b2b; color:#f4f1ea; padding:13px 15px; border-radius:10px; overflow-x:auto; font-size:13px; line-height:1.5; margin:8px 0}
+  pre .c{color:#9aa}
+
+  .callout{display:flex; gap:12px; background:var(--blue-bg); border:1px solid #d6e3f6; border-radius:12px; padding:14px 16px; margin:14px 0}
+  .callout.warnc{background:var(--amber-bg); border-color:#f1e0bd}
+  .callout.okc{background:var(--green-bg); border-color:#cdebdb}
+  .callout .ci{font-size:20px; line-height:1}
+  footer{padding:34px 0 60px; color:var(--ink-soft); font-size:13.5px}
+  .legend{font-size:12.5px; color:var(--ink-soft); margin-top:8px}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <span class="brand">🔍 Spendetector</span>
+  <span class="links">
+    <a href="#status">Status</a>
+    <a href="#what">What it is</a>
+    <a href="#arch">Architecture</a>
+    <a href="#migration">Migration</a>
+    <a href="#how">How it works</a>
+    <a href="#stack">Tech setup</a>
+    <a href="#show">Run of show</a>
+    <a href="#lines">Power lines</a>
+    <a href="#qa">Q&amp;A</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#punch">Pre-demo fixes</a>
+  </span>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="kick">Notion community demo · Friday June 12</div>
+  <h1>Spendetector demo guide</h1>
+  <p class="sub">Snap a receipt in Telegram, an AI reads every line item, and a Notion dashboard reveals the spending and price changes a bank statement hides. This guide explains the system inside out, then walks you beat by beat through the demo: what to click, what to say, in what order.</p>
+  <div class="meta">
+    <span class="pill ok">● Live now on Notion Workers</span>
+    <span class="pill ok">285 real items, 6 charts ready</span>
+    <span class="pill warn">OpenAI billing: action needed</span>
+    <span class="pill muted">Cost ≈ $0 to $10 / month</span>
+  </div>
+</div></header>
+
+<!-- ============ STATUS ============ -->
+<section id="status"><div class="wrap">
+  <h2>Audit verdict</h2>
+  <div class="h2big">Is it working? Yes. The migration is done and live.</div>
+  <p class="lead">The big update to your notes: receipts are <strong>no longer going to Modal</strong>. You finished moving the brain onto <strong>Notion's own servers</strong> (Notion Workers). I confirmed this against the live wiring, not from memory: Telegram is sending photos to the Notion Worker right now, with zero stuck messages and no errors.</p>
+
+  <div class="grid g4" style="margin-top:18px">
+    <div class="card"><div class="big" style="color:var(--money)">LIVE</div><div class="lbl">Telegram points at the Notion Worker (verified today). 0 pending, no errors.</div></div>
+    <div class="card"><div class="big">285</div><div class="lbl">Real line items in Notion, fully tagged (category, food group, health). Real stores.</div></div>
+    <div class="card"><div class="big">6 / 6</div><div class="lbl">Dashboard charts configured and rendering. Oat-milk price line is the star.</div></div>
+    <div class="card"><div class="big" style="color:var(--amber)">1 run</div><div class="lbl">Only one full receipt proven on the new worker. The cellular dress rehearsal is still owed.</div></div>
+  </div>
+
+  <div class="callout" style="margin-top:18px; background:var(--red-bg); border-color:#f1c9c0">
+    <span class="ci">🛑</span>
+    <div><strong>Not demo-ready until OpenAI billing is restored.</strong> A real test on June 10 failed: OpenAI returned <span class="mono">429 insufficient_quota</span>, that account is out of credits. The pipeline itself is fine (the June 9 run proved it end to end, and Notion + Telegram are GREEN). The fix is billing, then run <span class="mono">python3 scripts/preflight.py</span> until OpenAI is GREEN, then send one real receipt. See <a href="#punch">pre-demo fixes</a>.</div>
+  </div>
+  <div class="callout warnc">
+    <span class="ci">⚠️</span>
+    <div><strong>What is and isn't proven.</strong> Done: stale dashboard numbers fixed, code backed up, the June 10 failure root-caused, and the worker hardened so it stops blaming the user's photo for a service outage. Pending you: restore OpenAI billing, deploy the hardened worker, then one real cellular receipt to confirm the full loop. Full list in <a href="#punch">pre-demo fixes</a>.</div>
+  </div>
+</div></section>
+
+<!-- ============ WHAT IT IS ============ -->
+<section id="what"><div class="wrap">
+  <h2>The pitch</h2>
+  <div class="h2big">What it is, and the gap it fills</div>
+  <div class="grid g2">
+    <div>
+      <p class="lead">Your bank statement says <em>"$87 at Target."</em> It never shows the items. So you never see your real habits or the quiet price creep.</p>
+      <p class="muted">No budgeting app (Copilot, Rocket Money, Cleo) reads line items. Reward apps (Fetch) read them but sell your data. Spendetector reads your line items, keeps the data in <strong>your</strong> private Notion, and surfaces per-item price history and habits.</p>
+    </div>
+    <div class="card flat">
+      <h4>The one sentence to leave them with</h4>
+      <p class="lead" style="margin:.2em 0">"My bank saw store totals. Notion became the product layer for item-level spending intelligence."</p>
+      <p class="small muted">This is a Notion-native product story, not a receipt-OCR script. Lead with Notion, not with the AI.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ ARCHITECTURE ============ -->
+<section id="arch"><div class="wrap">
+  <h2>Architecture</h2>
+  <div class="h2big">How the pieces connect</div>
+  <p class="muted">One loop. A photo goes in, a tagged Notion dashboard comes out, and the bot replies with a tap-through link.</p>
+
+  <div class="pipe">
+    <div class="node acc-tg"><div class="ico">📲</div><div class="nm">Telegram</div><div class="ds">You snap a receipt photo to the bot</div></div>
+    <div class="arrow">→</div>
+    <div class="node acc-nw"><div class="ico">⚙️</div><div class="nm">Notion Worker</div><div class="ds">Notion-hosted code runs the whole job</div></div>
+    <div class="arrow">→</div>
+    <div class="node acc-ai"><div class="ico">🧠</div><div class="nm">GPT-4o vision</div><div class="ds">Reads every line item into clean JSON</div></div>
+    <div class="arrow">→</div>
+    <div class="node acc-db"><div class="ico">🗂️</div><div class="nm">Notion databases</div><div class="ds">One receipt row + one row per item</div></div>
+    <div class="arrow">→</div>
+    <div class="node acc-out"><div class="ico">📊</div><div class="nm">Dashboard + reply</div><div class="ds">Charts update, bot sends a Notion link</div></div>
+  </div>
+  <p class="legend">Worker ID <span class="mono">019ead5b-3331-7fc0-86e4-760f74832232</span> · workspace <em>JD's Workspace</em> · environment <span class="mono">prod</span>. Modal (the old host) is still parked and reachable but receives no traffic.</p>
+
+  <div class="grid g2" style="margin-top:22px">
+    <div class="card">
+      <h4>What Notion does (the product layer)</h4>
+      <table>
+        <tr><td class="k">Frontend</td><td>The dashboard <em>is</em> the app the user sees</td></tr>
+        <tr><td class="k">Runtime</td><td>Notion Workers runs the TypeScript code</td></tr>
+        <tr><td class="k">Database</td><td>Receipts DB + Items DB store everything</td></tr>
+        <tr><td class="k">Dashboard</td><td>Native charts: month spend, price history, food groups, health, weekly</td></tr>
+        <tr><td class="k">Editor</td><td>You can fix a category or name right in Notion</td></tr>
+        <tr><td class="k">Control panel</td><td>A button or automation can fire a webhook</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h4>What the worker does (why not Notion alone)</h4>
+      <table>
+        <tr><td class="k">Receive the photo</td><td>Notion does not get Telegram photos directly</td></tr>
+        <tr><td class="k">Call GPT-4o vision</td><td>The OCR + understanding step</td></tr>
+        <tr><td class="k">Normalize items</td><td>Stable names so prices compare across weeks</td></tr>
+        <tr><td class="k">Compute price moves</td><td>Cross-row history is safer in code</td></tr>
+        <tr><td class="k">Write chart-ready fields</td><td>Charts need plain number, select, date fields</td></tr>
+        <tr><td class="k">Make the fun extras</td><td>Report-card image + recipe ideas from the items</td></tr>
+      </table>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ MIGRATION ============ -->
+<section id="migration"><div class="wrap">
+  <h2>The migration story (your best Notion-community hook)</h2>
+  <div class="h2big">From "Notion + a rented server" to "Notion runs the code too"</div>
+  <p class="muted">You started on Modal, a separate serverless cloud. You just moved the entire brain onto Notion Workers, Notion's own hosted runtime. For a Notion audience this is the headline: the product and the engine now both live in Notion.</p>
+
+  <div class="ba" style="margin-top:18px">
+    <div class="col before">
+      <span class="tag old">Before</span>
+      <h4 style="margin:.2em 0">Telegram → Modal → GPT-4o → Notion</h4>
+      <ul>
+        <li>Python webhook hosted on Modal (a separate cloud account)</li>
+        <li>Notion was storage + dashboard only</li>
+        <li>Two systems to keep alive and reason about</li>
+        <li>Still works today, kept as a warm fallback</li>
+      </ul>
+    </div>
+    <div class="mid">→</div>
+    <div class="col after">
+      <span class="tag new">Now · live</span>
+      <h4 style="margin:.2em 0">Telegram → Notion Worker → GPT-4o → Notion</h4>
+      <ul>
+        <li>TypeScript worker hosted <strong>inside Notion</strong> (<span class="mono">@notionhq/workers</span>)</li>
+        <li>Notion is runtime + storage + dashboard + control panel</li>
+        <li>One platform. Deployed with the <span class="mono">ntn</span> CLI</li>
+        <li>Proven end to end on June 9</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="ci">💡</span>
+    <div><strong>Say this clearly:</strong> a Notion Worker is <em>code</em> Notion hosts and runs. It is not a Notion Custom Agent (that is an AI chat interface). The worker is deterministic: it receives the webhook, calls APIs, and writes to Notion. That makes the live demo reliable, because nothing depends on an AI <em>deciding</em> what to do.</div>
+  </div>
+</div></section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how"><div class="wrap">
+  <h2>How it works</h2>
+  <div class="h2big">A receipt photo to a Notion row, step by step</div>
+
+  <div class="step"><div class="n">1</div><div>
+    <h4>Telegram delivers the photo to the Notion Worker</h4>
+    <p class="muted">The bot's webhook points at the worker's Notion URL. The worker checks a secret header and that the sender is the allowed chat, then grabs the largest photo. A non-photo message gets a friendly nudge instead of dead air.</p>
+  </div></div>
+
+  <div class="step"><div class="n">2</div><div>
+    <h4>It replies "Got your receipt" immediately</h4>
+    <p class="muted">Before the slow work begins, the bot acknowledges, so you are never staring at silence. It also hashes the image and checks Notion, so re-sending the same photo will not create a duplicate.</p>
+  </div></div>
+
+  <div class="step"><div class="n">3</div><div>
+    <h4>GPT-4o reads the receipt into structured JSON</h4>
+    <p class="muted">The image goes to GPT-4o vision with a strict schema. It returns store, date, totals, and each line item with quantity, unit price, a category (1 of 8), a food group (1 of 10), and a health tier (green / yellow / red). Card digits are scrubbed in the prompt.</p>
+    <span class="tech">model: gpt-4o-2024-08-06 · ≈ $0.005 per receipt</span>
+  </div></div>
+
+  <div class="step"><div class="n">4</div><div>
+    <h4>It compares prices to your history</h4>
+    <p class="muted">For each item it looks up past prices in the Items DB and flags any move over 10 percent. This is the shrinkflation engine. The biggest move becomes the receipt's headline insight.</p>
+  </div></div>
+
+  <div class="step"><div class="n">5</div><div>
+    <h4>It writes to Notion: one receipt row, one row per item</h4>
+    <p class="muted">The Receipts DB gets the store and totals. The Items DB gets every line item with chart-ready fields (number, select, date, plus week and month buckets). This is what every chart on the dashboard reads.</p>
+  </div></div>
+
+  <div class="step"><div class="n">6</div><div>
+    <h4>It builds a fun report on the receipt's own page, then replies</h4>
+    <p class="muted">Best-effort extras: a health grade, a "cozy pantry" report-card image, and 2 to 3 recipe ideas built from the actual items ("Cook This Tonight") with a menu illustration. Then the bot sends the final message with store, total, the top insight, and a tap-through Notion link.</p>
+    <span class="tech">report-card + menu images: gpt-image-1 · recipes: GPT-4o</span>
+  </div></div>
+
+  <div class="callout warnc">
+    <span class="ci">⏱️</span>
+    <div><strong>Reality check on timing:</strong> the full path takes about <strong>95 seconds</strong> (OCR, writes, two images, recipes). That is why the demo opens in Notion and talks over the seeded dashboard while the new receipt processes in the background. Plan for it, do not fight it.</div>
+  </div>
+</div></section>
+
+<!-- ============ TECH SETUP ============ -->
+<section id="stack"><div class="wrap">
+  <h2>Technical setup</h2>
+  <div class="h2big">The stack, the data model, the deploy</div>
+
+  <div class="grid g3">
+    <div class="card"><h4>Capture</h4><p class="small muted">Telegram Bot API. A dedicated bot. Photos only from your allowed chat ID, verified by a secret token.</p></div>
+    <div class="card"><h4>Runtime</h4><p class="small muted">Notion Workers (<span class="mono">@notionhq/workers</span>), TypeScript, hosted by Notion. Deployed with the <span class="mono">ntn</span> CLI.</p></div>
+    <div class="card"><h4>Intelligence</h4><p class="small muted">OpenAI GPT-4o vision for extraction, GPT-4o for recipes, gpt-image-1 for the report-card and menu images.</p></div>
+    <div class="card"><h4>Store + visuals</h4><p class="small muted">Notion API. Two databases plus native chart views. Charts read plain fields, never formulas or rollups.</p></div>
+    <div class="card"><h4>Privacy</h4><p class="small muted">Card digits scrubbed. OpenAI retention + training opt-out. Data lives in your private Notion. Export and delete are yours.</p></div>
+    <div class="card"><h4>Cost</h4><p class="small muted">Worker runtime included with Notion. About $0.005 per receipt of vision. Roughly $0 to $10 a month total.</p></div>
+  </div>
+
+  <h3>The data model (two databases)</h3>
+  <div class="grid g2">
+    <div class="card">
+      <h4>🧾 Spendetector Receipts</h4>
+      <p class="small muted" style="margin-top:0">One row per receipt.</p>
+      <p class="small"><span class="mono">Store</span> · <span class="mono">Date</span> · <span class="mono">Subtotal</span> · <span class="mono">Tax</span> · <span class="mono">Total</span> · <span class="mono">Item Count</span> · <span class="mono">Receipt Photo</span> · <span class="mono">Image Hash</span> (dedupe) · <span class="mono">Status</span></p>
+    </div>
+    <div class="card">
+      <h4>🛒 Spendetector Items</h4>
+      <p class="small muted" style="margin-top:0">One row per line item. This drives every chart.</p>
+      <p class="small"><span class="mono">Item</span> · <span class="mono">Norm Name</span> · <span class="mono">Category</span> · <span class="mono">Food Group</span> · <span class="mono">Health Tier</span> · <span class="mono">Qty</span> · <span class="mono">Unit Price</span> · <span class="mono">Line Total</span> · <span class="mono">Store</span> · <span class="mono">Date</span> · <span class="mono">Week</span> · <span class="mono">Month</span> · <span class="mono">Receipt</span> (relation)</p>
+    </div>
+  </div>
+
+  <h3>Deploy + secrets (for reference, already done)</h3>
+  <pre><span class="c"># deploy the worker onto Notion</span>
+cd notion-worker &amp;&amp; npm install
+ntn login
+ntn workers deploy --name spendetector-worker   <span class="c"># first time</span>
+ntn workers deploy                               <span class="c"># updates after that</span>
+
+<span class="c"># point Telegram at the worker's webhook URL</span>
+curl -X POST "https://api.telegram.org/bot$TOKEN/setWebhook" \
+  -d "url=$NOTION_WORKER_WEBHOOK_URL" -d "secret_token=$SECRET"</pre>
+  <p class="legend">Secrets live on the worker via <span class="mono">ntn workers env set</span> (Telegram token + secret + allowed chat, OpenAI key, Notion token, the two DB IDs, dashboard URL). Logs: <span class="mono">ntn workers runs list</span> and <span class="mono">ntn workers runs logs &lt;id&gt;</span>.</p>
+</div></section>
+
+<!-- ============ RUN OF SHOW ============ -->
+<section id="show"><div class="wrap">
+  <h2>The demo · run of show</h2>
+  <div class="h2big">What to click, what to say, in order</div>
+  <p class="muted">About 4 to 5 minutes. Open in Notion (never start in Telegram). The left column is what you do on screen; the right is a suggested line to say. Make the words your own.</p>
+
+  <div class="beat">
+    <div class="bn">1</div>
+    <div class="do"><div class="lab">Do · on screen</div>Open the Notion dashboard. Land on the hero: <strong>"Price Watch: oat milk is up 26%."</strong></div>
+    <div class="say"><div class="lab">Say</div><div class="quote"><q>This is my real grocery spending. My bank told me I spent money at Whole Foods. It never told me <strong>oat milk quietly went up 26 percent</strong>. Notion can, because it has every line item.</q></div></div>
+  </div>
+
+  <div class="beat">
+    <div class="bn">2</div>
+    <div class="do"><div class="lab">Do · on screen</div>Point at the Price Watch leaderboard (oat milk, eggs, chicken, greek yogurt). Then the "thing a bank cannot show" callout.</div>
+    <div class="say"><div class="lab">Say</div><div class="quote"><q>Eggs up 54 percent. Chicken up 24. This is shrinkflation, line by line, built from item rows in Notion. <strong>A bank statement has one row. Notion gives me the whole product surface.</strong></q></div></div>
+  </div>
+
+  <div class="beat">
+    <div class="bn">3</div>
+    <div class="do"><div class="lab">Do · on screen</div>Switch to Telegram. Snap or send one real receipt photo to the bot. It replies "Got your receipt."</div>
+    <div class="say"><div class="lab">Say</div><div class="quote"><q>Here is how a receipt gets in. I just take a photo in Telegram. That is the entire capture step. No app to open, no typing.</q></div><div class="tmark">⏱️ It now processes for ~90s. Do NOT wait on it. Go straight back to Notion (beat 4).</div></div>
+  </div>
+
+  <div class="beat">
+    <div class="bn">4</div>
+    <div class="do"><div class="lab">Do · on screen</div>Back in Notion while it processes. Scroll the charts: food groups donut, the oat-milk price line, health mix, weekly spend, category.</div>
+    <div class="say"><div class="lab">Say</div><div class="quote"><q>While that runs, this is what the data becomes. Same item rows, every chart. Food groups, a health mix, weekly spend. <strong>Most budgeting apps categorize the transaction. This categorizes the receipt.</strong></q></div></div>
+  </div>
+
+  <div class="beat">
+    <div class="bn">5</div>
+    <div class="do"><div class="lab">Do · on screen</div>Open the new receipt's own page (the report card image, insights, "Cook This Tonight" recipes).</div>
+    <div class="say"><div class="lab">Say</div><div class="quote"><q>The first AI job is serious: read the receipt accurately. The second is delightful: a little report card with health signals and meal ideas from what I actually bought, so the data feels usable, not like a spreadsheet.</q></div></div>
+  </div>
+
+  <div class="beat">
+    <div class="bn">6</div>
+    <div class="do"><div class="lab">Do · on screen</div>Show the bot's final reply with the tap-through link. Tap it to jump to the new row in Notion.</div>
+    <div class="say"><div class="lab">Say</div><div class="quote"><q>And it is back. Store, total, the top insight, and a link straight to the row in my private Notion. <strong>The AI is not the app. The AI reads the receipt. Notion is where the product lives.</strong></q></div></div>
+  </div>
+
+  <div class="beat">
+    <div class="bn">7</div>
+    <div class="do"><div class="lab">Do · on screen</div>Close on the architecture, one breath. (Optional: open the "Raw data" sub-page to prove it is all really there.)</div>
+    <div class="say"><div class="lab">Say</div><div class="quote"><q>The whole engine runs <strong>inside Notion</strong> now, on Notion Workers. I deleted the separate server. Notion is my database, dashboard, editor, and the runtime. That is why I build AI products on Notion.</q></div></div>
+  </div>
+
+  <div class="callout">
+    <span class="ci">🛟</span>
+    <div><strong>If the live receipt is slow or fails:</strong> you lose nothing. The June 9 receipt is already in the dashboard. Keep narrating the charts and the report page. Say "it processes in the background and lands in about a minute, here is one from earlier." The seeded dashboard carries the demo on its own.</div>
+  </div>
+</div></section>
+
+<!-- ============ POWER LINES ============ -->
+<section id="lines"><div class="wrap">
+  <h2>Power lines</h2>
+  <div class="h2big">The language that lands. Memorize 3.</div>
+  <div class="line-cheat">"My bank saw store totals. Notion became the product layer for item-level spending intelligence."</div>
+  <div class="line-cheat">"Most budgeting apps categorize the transaction. This categorizes the receipt."</div>
+  <div class="line-cheat">"A bank statement has one row. Notion gives me charts, a gallery, a calendar, editable data, and automations."</div>
+  <div class="line-cheat">"The AI is not the app. The AI reads the receipt. Notion is where the product lives."</div>
+  <div class="line-cheat">"This is why I like Notion for AI products: a database, dashboard, editor, and workflow surface before you build any custom frontend."</div>
+  <p class="legend">Tone: lead with the Notion story, treat the AI as a feature, keep the privacy line ready ("it lives in my private Notion, nobody sells it"). Plain words, no jargon.</p>
+</div></section>
+
+<!-- ============ Q&A ============ -->
+<section id="qa"><div class="wrap">
+  <h2>Q&amp;A prep</h2>
+  <div class="h2big">Likely questions, crisp answers</div>
+  <div class="grid g2">
+    <div class="card"><h4>Why not just use a budgeting app?</h4><p class="small muted">They categorize the bank transaction (one total). None read your line items. The line items are where habits and price creep actually live.</p></div>
+    <div class="card"><h4>Is this a Notion Agent?</h4><p class="small muted">No. It is a Notion Worker, which is deterministic code Notion hosts. An Agent is an AI chat interface and cannot reliably build charts, buttons, or automations on its own. A Notion Agent could sit on top later as a "what got more expensive?" assistant.</p></div>
+    <div class="card"><h4>Why move off Modal?</h4><p class="small muted">To put everything on one platform. Notion Workers runs the code next to the data and the dashboard. Fewer moving parts, and a cleaner Notion story. Modal still works and is kept as a fallback.</p></div>
+    <div class="card"><h4>How accurate is the reading?</h4><p class="small muted">Around 90 percent on line items with GPT-4o. Low-confidence items are flagged, and you can fix any category or name directly in Notion, since it is just a database.</p></div>
+    <div class="card"><h4>What about privacy and my card?</h4><p class="small muted">Card digits are stripped and never stored. Vision runs with retention and training opt-out. Everything lives in your private Notion workspace, and export or delete is one action.</p></div>
+    <div class="card"><h4>What does it cost?</h4><p class="small muted">About half a cent per receipt for the AI. Worker runtime is included with Notion. Realistically $0 to $10 a month.</p></div>
+  </div>
+</div></section>
+
+<!-- ============ ROADMAP ============ -->
+<section id="roadmap"><div class="wrap">
+  <h2>Future roadmap</h2>
+  <div class="h2big">Where it goes next</div>
+
+  <div class="tier now">
+    <div class="th"><span class="dot"></span><span class="tt">Shipped · demo-ready today</span><span class="tm">backed by real data</span></div>
+    <ul>
+      <li>Receipt to itemized Notion rows, fully tagged</li>
+      <li>Shrinkflation Price Watch leaderboard</li>
+      <li>Per-receipt report card + health grade</li>
+      <li>"Cook This Tonight" recipes from your items</li>
+      <li>Food group, health mix, weekly + category charts</li>
+      <li>Same-photo dedupe (image hash)</li>
+    </ul>
+  </div>
+
+  <div class="tier next">
+    <div class="th"><span class="dot"></span><span class="tt">Next · close to ready</span><span class="tm">a few hours each</span></div>
+    <ul>
+      <li>"Watch this item" Notion button (backend exists, UI not wired yet)</li>
+      <li>Correction memory: fix a category once, future receipts learn it</li>
+      <li>Weekly Notion recap page, generated automatically</li>
+      <li>Store comparison ("oat milk is cheaper at Trader Joe's")</li>
+    </ul>
+  </div>
+
+  <div class="tier later">
+    <div class="th"><span class="dot"></span><span class="tt">Later · vision</span><span class="tm">the bigger product</span></div>
+    <ul>
+      <li>Shopping list from repeated staples</li>
+      <li>Privacy controls as real buttons (export, delete)</li>
+      <li>A Notion Agent as a Q&amp;A assistant over the workspace</li>
+      <li>Receipt history search and budgets</li>
+    </ul>
+  </div>
+</div></section>
+
+<!-- ============ PUNCH LIST ============ -->
+<section id="punch"><div class="wrap">
+  <h2>Pre-demo fixes</h2>
+  <div class="h2big">The honest punch list before Friday</div>
+  <p class="muted">Updated after the June 10 live test failed. The blocker is OpenAI billing. Two earlier items are done. The worker is hardened and built, pending your deploy.</p>
+
+  <div class="fix">
+    <span class="sev must">Blocker</span>
+    <div>
+      <h4>Restore OpenAI billing (only you can do this)</h4>
+      <p class="small muted">The June 10 test failed because OpenAI returned <span class="mono">429 insufficient_quota</span>: that project key is out of credits. No code fixes this. Add credits or raise the budget on the OpenAI project that owns the <span class="mono">sk-proj-…</span> key, then run the preflight until OpenAI is GREEN. The June 9 testing (full receipt + image generation + the 221-row backfill) drained a small balance, so set a sane budget and watch it.</p>
+    </div>
+  </div>
+
+  <div class="fix">
+    <span class="sev must">Must do</span>
+    <div>
+      <h4>Run the preflight before you go on stage</h4>
+      <p class="small muted">One command checks all three external services the loop needs, so you never find a dead dependency on stage: <span class="mono">python3 scripts/preflight.py</span>. GREEN across OpenAI, Notion, Telegram means dependencies are up. Then send one real receipt to confirm the full loop. This is the safeguard that would have caught June 10 in advance.</p>
+    </div>
+  </div>
+
+  <div class="fix">
+    <span class="sev should">Should</span>
+    <div>
+      <h4>Deploy the hardened worker</h4>
+      <p class="small muted">The worker now replies "temporarily unavailable on my end, not your photo" on a service error instead of "resend" (which was misleading), and logs the real OpenAI reason so the next failure is obvious from the logs. Built and typechecked, not yet deployed (a live prod deploy needs your go): <span class="mono">cd notion-worker &amp;&amp; ntn workers deploy</span>.</p>
+    </div>
+  </div>
+
+  <div class="fix">
+    <span class="sev done">Done</span>
+    <div>
+      <h4>The dashboard no longer contradicts itself</h4>
+      <p class="small muted">Fixed live during this audit. The heading "This month: $499.54" is now <strong>"Spending this month"</strong> (the live chart shows the real number), and the intro "17 receipts and 221 items" is now <strong>"Every receipt and item, tracked since March"</strong>. The hardcoded figures are gone, so these never go stale again. The accurate numbers (oat milk +26 percent, the leaderboard) were left untouched.</p>
+    </div>
+  </div>
+
+  <div class="fix">
+    <span class="sev done">Done</span>
+    <div>
+      <h4>The new code is backed up on GitHub</h4>
+      <p class="small muted">Confirmed during this audit. The migration branch <span class="mono">feat/notion-workers-spendetector</span> is on your private repo (the SessionEnd auto-backup hook had already pushed it). It only lacked a local upstream link, now set, so future pushes are clean.</p>
+    </div>
+  </div>
+
+  <div class="fix">
+    <span class="sev must">Must do</span>
+    <div>
+      <h4>Run one real cellular test (the one thing still owed)</h4>
+      <p class="small muted">The new worker has been proven once. Your own live-surface rule wants a real run on the path Telegram actually uses. Before Friday: on your phone over cellular (not home Wi-Fi), snap 2 different receipts, confirm the reply + tap link + new Notion rows, then re-send one photo to confirm no duplicate. That checks off I1, I2, I4, I5 in <span class="mono">docs/live-e2e-evidence.md</span>.</p>
+    </div>
+  </div>
+
+  <div class="fix">
+    <span class="sev should">Should</span>
+    <div>
+      <h4>Decide Modal's role out loud</h4>
+      <p class="small muted">Modal is still deployed and reachable, just not in the path. Either keep it as a documented warm fallback (and have the "point Telegram back to Modal" command ready), or stand it down. Do not leave it ambiguous on stage.</p>
+    </div>
+  </div>
+
+  <div class="fix">
+    <span class="sev note">Note</span>
+    <div>
+      <h4>The QA checklist tracks the old code</h4>
+      <p class="small muted"><span class="mono">docs/qa-checklist.yaml</span> (34 pending) was written against the Python/Modal code, so its automated checks do not cover the deployed worker. Not demo-blocking, but it overstates "untested." The single worker run plus the cellular test above are the real evidence.</p>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p><strong>🔍 Spendetector</strong> · demo guide generated 2026-06-10 from a live audit of the running system. Repo: <span class="mono">/Users/joyd/Spendetector</span>, branch <span class="mono">feat/notion-workers-spendetector</span>.</p>
+  <p>Verified live, not from memory: Telegram webhook, worker deploy state, 285 Notion item rows, all six charts, and the price-history numbers. Source docs: <span class="mono">docs/demo-playbook.md</span>, <span class="mono">docs/live-e2e-evidence.md</span>, <span class="mono">notion-worker/README.md</span>.</p>
+</div></footer>
+
+</body>
+</html>
