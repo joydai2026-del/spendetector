@@ -10,16 +10,21 @@ A cloud, phone-first personal app. Photograph a receipt in Telegram, an AI reads
 Bank statements show "$87 at Target," never the items, so you never see your real habits. No budgeting app (Copilot, Rocket Money, Cleo) reads line items. Reward apps (Fetch) read them but sell your data. The gap: read your line items, keep the data yours, surface per-item price history (shrinkflation) and habits.
 
 ## Architecture (the loop)
-`Telegram (photo)` → `Modal webhook (cloud, free tier)` → `GPT-4o vision → line-item JSON` → `Notion database + dashboard` → `bot replies with a tap-through Notion link`.
+`Telegram (photo)` → `Notion Worker webhook (@notionhq/workers, hosted by Notion)` → `GPT-4o vision → line-item JSON` → `Notion database + dashboard` → `bot replies with a tap-through Notion link`.
+
+> Migrated off Modal 2026-06-09, live-verified end-to-end 2026-06-10. The old Modal app (`spendetector`) is retained as a cold fallback, not the live path.
 
 - **Capture:** a fresh dedicated Telegram bot via BotFather (locked 2026-06-04; reusing a personal bot is out because `setWebhook` makes a bot exclusive to one URL).
-- **Cloud:** Modal (serverless; Modal ships an official receipt-OCR example to start from). Never the Mac.
+- **Cloud:** **Notion Workers** (`@notionhq/workers`, deploy via `ntn workers deploy`) run the code inside Notion; logs via `ntn workers runs logs <id>`. The old Modal app (`spendetector`) is a deployed cold fallback, not the live path. Never the Mac.
 - **Extraction:** GPT-4o vision, strict JSON `{store, date, items[{name, qty, unit_price, total}], tax, total}`. ~90% line-item accuracy, ~$0.005/receipt. Use full GPT-4o, NOT mini (mini's image-token quirk erases the savings).
 - **Store + charts:** Notion API (free). Notion charts read plain number/select fields the bot writes (charts cannot use formulas or rollups on an axis).
 - **Cost:** ~$0 to $10 / month total.
 
 ## The plan
 Full plan with diagrams, dashboard mockups, and the demo script: **`docs/plan.html`** (open in a browser). Decision record: `~/Documents/jj-knowledge-vault/agents/claude-code-m4/decisions/2026-06-04-notion-personal-products.md`.
+
+## Demo (Fri 2026-06-12)
+Assets in `docs/demo/`: `presenter-guide.html` (7-beat run-of-show + Q&A) and `audience-onepager.html` (projector vision deck). **Before stage, run `python3 scripts/preflight.py`** (OpenAI + Notion + Telegram health gate) until all GREEN, then warm with one real receipt. The demo-ready gate is green preflight + one real receipt, NOT a green build (§3.13). OpenAI billing is a hard dependency: keep a funded budget cap.
 
 ## How to build
 1. `/memory-loader` (session start, mandatory).
@@ -36,7 +41,7 @@ Full plan with diagrams, dashboard mockups, and the demo script: **`docs/plan.ht
 - **Demo shape:** two beats (live itemization + seeded real-history price-creep), Notion dashboard is the on-screen hero. See the plan, sections 4 and 6.
 
 ## Non-negotiables
-- **Cloud-first (Modal), phone-first.** Never Mac-tethered.
+- **Cloud-first (Notion Workers), phone-first.** Never Mac-tethered.
 - **Notion is the star** (this is a Notion demo): the AI writes into a Notion database; Notion builds the dashboard.
 - **Privacy:** never sell data; strip card digits; one-tap export/delete; OpenAI vision with retention/training opt-out.
 - No hardcoding (env vars / config). Cut a branch before the first edit. No em dashes in output.
