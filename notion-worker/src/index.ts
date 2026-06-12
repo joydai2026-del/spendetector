@@ -118,9 +118,19 @@ function largestPhotoFileId(message: any): string | null {
   if (Array.isArray(photos) && photos.length > 0) {
     return String(photos[photos.length - 1].file_id);
   }
+  // Also accept an image sent as a file/document. Some clients send a photo
+  // "as file" with a generic or missing mime type, so fall back to the
+  // filename extension and treat empty/octet-stream as a likely image.
   const doc = message?.document;
-  if (doc?.file_id && String(doc.mime_type || "").startsWith("image/")) {
-    return String(doc.file_id);
+  if (doc?.file_id) {
+    const mime = String(doc.mime_type || "").toLowerCase();
+    const name = String(doc.file_name || "").toLowerCase();
+    const looksImage =
+      mime.startsWith("image/") ||
+      /\.(jpe?g|png|webp|heic|heif|gif|bmp|tiff?)$/.test(name) ||
+      mime === "" ||
+      mime === "application/octet-stream";
+    if (looksImage) return String(doc.file_id);
   }
   return null;
 }
@@ -968,6 +978,15 @@ async function handleTelegramUpdate(update: any, notion: any): Promise<Record<st
 
   const fileId = largestPhotoFileId(message);
   if (!fileId) {
+    console.log(
+      "no_photo update: " +
+        JSON.stringify({
+          keys: Object.keys(message || {}),
+          docMime: message?.document?.mime_type,
+          docName: message?.document?.file_name,
+          hasPhoto: Array.isArray(message?.photo),
+        }),
+    );
     if (chatId !== undefined && chatId !== null) {
       await sendMessage(chatId, greetingReply());
     }
