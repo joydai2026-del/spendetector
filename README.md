@@ -6,6 +6,8 @@
 
 **18-second demo video:** [Watch a receipt become itemized spending data](docs/spendetector-demo.mp4)
 
+https://github.com/user-attachments/assets/6b0e8cef-3781-4cb7-8538-7da743efb9bf
+
 Photograph a receipt in Telegram. The cloud (Modal + GPT-4o vision) reads every line item and writes it to a Notion database that draws your spending charts, including the one no bank can show: each item's price over time. The bot replies with one useful insight and a tap-through Notion link.
 
 Plan and decisions: [`.vault/plans/2026-06-04-spendetector-plan.md`](.vault/plans/2026-06-04-spendetector-plan.md). QA checklist: [`docs/qa-checklist.yaml`](docs/qa-checklist.yaml).
