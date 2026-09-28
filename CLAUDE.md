@@ -19,7 +19,7 @@ Bank statements show "$87 at Target," never the items, so you never see your rea
 - **Cost:** ~$0 to $10 / month total.
 
 ## The plan
-Full plan with diagrams, dashboard mockups, and the demo script: **`docs/plan.html`** (open in a browser). Decision record: `~/Documents/jj-knowledge-vault/agents/claude-code-m4/decisions/2026-06-04-notion-personal-products.md`.
+Full plan with diagrams, dashboard mockups, and the demo script: **`docs/plan.html`** (open in a browser). The decision record lives in private notes (not in this repo).
 
 ## How to build
 1. `/memory-loader` (session start, mandatory).
